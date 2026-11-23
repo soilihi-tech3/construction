@@ -131,59 +131,25 @@ export default function ProductCard({ product, isFavorisPage }) {
           <Heart size={18} color={isFavorite ? "#B4483A" : "var(--muted)"} fill={isFavorite ? "#B4483A" : "none"} />
         </button>
 
-        {/* BADGES BTP : SUR COMMANDE, PLUS VENDU, RECOMMANDÉ, NOUVEAU, PROMO */}
-        <div style={{ position: "absolute", top: 10, left: 10, display: "flex", flexDirection: "column", gap: 5, zIndex: 10 }}>
-          {product.disponibilite === "sur_commande" && (
+        {/* BADGE BTP PHOTO : POPULAIRE UNIQUEMENT (ÉPURATION TOTALE DU VISUEL) */}
+        {(product.isPlusVendu || product.isPopulaire) && (
+          <div style={{ position: "absolute", top: 12, left: 12, zIndex: 10 }}>
             <span style={{
-              background: "#0284C7", color: "#fff",
-              padding: "4px 9px", borderRadius: 14,
-              fontWeight: 800, fontSize: 11,
-              boxShadow: "0 2px 6px rgba(2,132,199,0.3)"
+              background: "#F59E0B",
+              color: "#000000",
+              padding: "4px 12px",
+              borderRadius: 20,
+              fontWeight: 900,
+              fontSize: 11,
+              letterSpacing: "0.5px",
+              textTransform: "uppercase",
+              boxShadow: "0 2px 8px rgba(245, 158, 11, 0.35)",
+              display: "inline-block"
             }}>
-              Sur commande
+              POPULAIRE
             </span>
-          )}
-          {product.isPlusVendu && (
-            <span style={{
-              background: "#EA580C", color: "#fff",
-              padding: "4px 9px", borderRadius: 14,
-              fontWeight: 800, fontSize: 11,
-              boxShadow: "0 2px 6px rgba(234,88,12,0.3)"
-            }}>
-              Plus vendu
-            </span>
-          )}
-          {product.isRecommande && (
-            <span style={{
-              background: "#16A34A", color: "#fff",
-              padding: "4px 9px", borderRadius: 14,
-              fontWeight: 800, fontSize: 11,
-              boxShadow: "0 2px 6px rgba(22,163,74,0.3)"
-            }}>
-              Recommandé
-            </span>
-          )}
-          {hasPromo && !product.isPlusVendu && !product.isRecommande && (
-            <span style={{
-              background: "#0284C7", color: "#fff",
-              padding: "4px 9px", borderRadius: 14,
-              fontWeight: 800, fontSize: 11,
-              boxShadow: "0 2px 6px rgba(2,132,199,0.3)"
-            }}>
-              {promoPercent > 0 ? `-${promoPercent}%` : "PROMO"}
-            </span>
-          )}
-          {product.isNouveau && !hasPromo && !product.isPlusVendu && (
-            <span style={{
-              background: "#163424", color: "#fff",
-              padding: "4px 9px", borderRadius: 14,
-              fontWeight: 800, fontSize: 11,
-              boxShadow: "0 2px 6px rgba(22,52,36,0.35)"
-            }}>
-              Nouveau
-            </span>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* OUT OF STOCK OR MAX IN CART BADGES */}
         {isOutOfStock && product.disponibilite !== "sur_commande" ? (
@@ -210,76 +176,131 @@ export default function ProductCard({ product, isFavorisPage }) {
         ) : null}
       </div>
 
-      <div className="bs-card-body">
-        <div className="nom" style={{ marginTop: 2, fontSize: 14, fontWeight: 700, lineHeight: 1.35 }}>{product.nom}</div>
+      <div className="bs-card-body" style={{ padding: "14px 16px 16px" }}>
+        {/* CATÉGORIE EN ORANGE */}
+        <div style={{
+          color: "#EA580C",
+          fontSize: 11,
+          fontWeight: 800,
+          textTransform: "uppercase",
+          letterSpacing: "0.6px",
+          marginBottom: 4
+        }}>
+          {product.Category?.nom || product.categorieNom || "MATÉRIAUX BTP"}
+        </div>
+
+        {/* TITRE DU PRODUIT */}
+        <div className="nom" style={{ fontSize: 15, fontWeight: 800, color: "#0F172A", lineHeight: 1.35, minHeight: 38 }}>
+          {product.nom}
+        </div>
         
         {/* Détail Volume / Spécification BTP si renseigné */}
         {product.volume && (
-          <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 2 }}>
+          <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 2, marginBottom: 4 }}>
             Volume : <strong style={{ color: "var(--ink)" }}>{product.volume}</strong>
           </div>
         )}
 
-        {/* AFFICHAGE DU PRIX : KMF EN HAUT / GRAND, EURO (€) EN BAS */}
+        {/* AFFICHAGE DU PRIX : KMF EN HAUT / GRAND + PILL DISPONIBILITÉ À DROITE */}
         {(() => {
           const currentPrice = hasPromo && promoPrice ? promoPrice : regularPrice;
           const { kmfStr, eurStr } = formatDualPrice(currentPrice, product.prixParDevise?.EUR);
-          const unitSuffix = product.unite ? ` / ${product.unite}` : "";
-          const indicatifSuffix = product.isPrixFixe === false ? " (indicatif)" : "";
+          const isSurCommande = product.disponibilite === "sur_commande";
 
           return (
-            <div style={{ marginTop: 6 }}>
-              <div style={{ display: "flex", alignItems: "baseline", flexWrap: "wrap", gap: 6 }}>
-                <span className="bs-price" style={{ fontSize: "16px", fontWeight: 800, color: hasPromo ? "var(--accent)" : "var(--ink)" }}>
+            <div style={{ marginTop: 8 }}>
+              {/* Ligne principale : Prix KMF + Badge Disponibilité */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                <span className="bs-price" style={{ fontSize: "17px", fontWeight: 900, color: hasPromo ? "#EA580C" : "#0F172A" }}>
                   {kmfStr}
                 </span>
-                <span style={{ fontSize: "12px", color: "var(--muted)", fontWeight: 600 }}>
-                  {unitSuffix}{indicatifSuffix}
-                </span>
-                {hasPromo && (
-                  <span className="bs-price barre" style={{ fontSize: "12px" }}>
-                    {formatDualPrice(regularPrice).kmfStr}
+
+                {isSurCommande ? (
+                  <span style={{
+                    background: "#EFF6FF",
+                    color: "#1D4ED8",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: "3px 10px",
+                    borderRadius: 12,
+                    border: "1px solid #DBEAFE",
+                    whiteSpace: "nowrap"
+                  }}>
+                    Sur commande
+                  </span>
+                ) : (
+                  <span style={{
+                    background: "#DCFCE7",
+                    color: "#16A34A",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    padding: "3px 10px",
+                    borderRadius: 12,
+                    border: "1px solid #BBF7D0",
+                    whiteSpace: "nowrap"
+                  }}>
+                    En stock
                   </span>
                 )}
               </div>
-              <div style={{ fontSize: "12.5px", color: "#64748B", fontWeight: 700, marginTop: 1 }}>
-                {eurStr}
+
+              {/* Ligne secondaire : Prix en Euro + unité de vente */}
+              <div style={{ fontSize: "12px", color: "#64748B", fontWeight: 600, marginTop: 2 }}>
+                {eurStr}{product.unite ? ` · par ${product.unite}` : ""}
               </div>
             </div>
           );
         })()}
 
-        <div className="bs-rating" style={{ marginTop: 6 }}>
-          <Stars note={noteMoyenne} size={12} />
-          <span>{noteMoyenne.toFixed(1)} ({product.avis?.length || 0})</span>
-        </div>
-
-        <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+        {/* BOUTON AJOUTER MODERNE NOIR CONFORME AUX MAQUETTES */}
+        <div style={{ marginTop: 12 }}>
           <button 
             className="bs-add-btn" 
             onClick={(e) => { 
               e.stopPropagation(); 
-              if (isOutOfStock) {
-                showToast(`Désolé, le produit "${product.nom}" est actuellement en rupture de stock. Il sera de nouveau disponible bientôt !`, "warning");
+              if (isOutOfStock && product.disponibilite !== "sur_commande") {
+                showToast(`Désolé, le produit "${product.nom}" est actuellement en rupture de stock.`, "warning");
                 return;
               }
               addToCart(product, 1); 
             }}
             style={{
-              flex: 1,
+              width: "100%",
               marginTop: 0,
-              background: isOutOfStock ? "var(--line)" : isMaxStockReached ? "#FEF3C7" : undefined,
-              color: isOutOfStock ? "var(--muted)" : isMaxStockReached ? "#B45309" : undefined,
-              borderColor: isMaxStockReached ? "#F59E0B" : undefined,
-              cursor: isOutOfStock ? "pointer" : "pointer"
+              background: isOutOfStock && product.disponibilite !== "sur_commande" 
+                ? "var(--line)" 
+                : isMaxStockReached 
+                ? "#FEF3C7" 
+                : "#0F172A",
+              color: isOutOfStock && product.disponibilite !== "sur_commande" 
+                ? "var(--muted)" 
+                : isMaxStockReached 
+                ? "#B45309" 
+                : "#ffffff",
+              borderRadius: 10,
+              padding: "10px 14px",
+              fontWeight: 700,
+              fontSize: "13.5px",
+              border: isMaxStockReached ? "1px solid #F59E0B" : "none",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 6,
+              transition: "all 0.2s ease"
+            }}
+            onMouseEnter={(e) => {
+              if (!isOutOfStock && !isMaxStockReached) e.currentTarget.style.background = "#1E293B";
+            }}
+            onMouseLeave={(e) => {
+              if (!isOutOfStock && !isMaxStockReached) e.currentTarget.style.background = "#0F172A";
             }}
           >
-            <ShoppingCart size={15} /> 
-            {isOutOfStock 
+            {isOutOfStock && product.disponibilite !== "sur_commande" 
               ? "Épuisé" 
               : isMaxStockReached 
               ? `Stock max (${qtyInCart}/${product.stock})` 
-              : "Ajouter au panier"}
+              : "+ Ajouter"}
           </button>
 
           {isFavorisPage && (

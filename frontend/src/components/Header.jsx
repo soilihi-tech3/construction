@@ -1141,59 +1141,105 @@ export default function Header({ setCartOpen: setCartOpenProp }) {
                   border: "1.5px solid var(--line)", boxShadow: "0 18px 50px rgba(0,0,0,0.25)",
                   zIndex: 9999, overflow: "hidden", padding: "8px 0"
                 }}>
-                  {categories.length === 0 ? (
-                    <div style={{ padding: "14px 18px", fontSize: 13, color: "var(--muted)" }}>Aucune catégorie</div>
-                  ) : (
-                    categories.map(cat => (
-                      <div
-                        key={cat.id}
-                        onClick={() => {
-                          setCategoriesOpen(false);
-                          navigate(`/catalogue?categoryId=${cat.id}`);
-                        }}
-                        style={{
-                          padding: "11px 18px", fontSize: 13.5, fontWeight: 700,
-                          color: "var(--ink)", cursor: "pointer", display: "flex",
-                          alignItems: "center", gap: 12, transition: "background 0.15s"
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = "var(--paper)"}
-                        onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
-                      >
-                        {cat.imageUrl ? (
-                          <img src={cat.imageUrl} alt={cat.nom} style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover", border: "1px solid var(--line)" }} />
-                        ) : (
-                          <Grid size={18} color="var(--forest)" />
-                        )}
-                        <span>{cat.nom}</span>
-                      </div>
-                    ))
-                  )}
+                  {(() => {
+                    const btpCategories = categories.filter(cat => {
+                      const n = (cat.nom || "").toLowerCase();
+                      return !n.includes("chargeur") && !n.includes("glace") && !n.includes("coque") && 
+                             !n.includes("écouteur") && !n.includes("câble") && !n.includes("powerbank") && 
+                             !n.includes("support");
+                    });
+
+                    function getHeaderCatImg(nom, img) {
+                      if (img && img.trim()) return img;
+                      const n = (nom || "").toLowerCase();
+                      if (n.includes("ciment") || n.includes("liant")) return "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=400&q=80";
+                      if (n.includes("fer") || n.includes("métal")) return "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=400&q=80";
+                      if (n.includes("sable") || n.includes("gravier")) return "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=400&q=80";
+                      if (n.includes("bois") || n.includes("planche")) return "https://images.unsplash.com/photo-1520038410233-7141be7e6f97?auto=format&fit=crop&w=400&q=80";
+                      if (n.includes("contreplaqué") || n.includes("panneau")) return "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=400&q=80";
+                      if (n.includes("quincaillerie")) return "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=400&q=80";
+                      if (n.includes("outil")) return "https://images.unsplash.com/photo-1581783342308-f792dbdd27c5?auto=format&fit=crop&w=400&q=80";
+                      if (n.includes("peint")) return "https://images.unsplash.com/photo-1562259949-e8e7689d7828?auto=format&fit=crop&w=400&q=80";
+                      return "https://images.unsplash.com/photo-1541888946425-d0fbb180c5f7?auto=format&fit=crop&w=400&q=80";
+                    }
+
+                    if (btpCategories.length === 0) {
+                      return <div style={{ padding: "14px 18px", fontSize: 13, color: "var(--muted)" }}>Aucune catégorie</div>;
+                    }
+
+                    return btpCategories.map(cat => {
+                      const img = getHeaderCatImg(cat.nom, cat.imageUrl);
+                      return (
+                        <div
+                          key={cat.id}
+                          onClick={() => {
+                            setCategoriesOpen(false);
+                            navigate(`/catalogue?categoryId=${cat.id}`);
+                          }}
+                          style={{
+                            padding: "11px 18px", fontSize: 13.5, fontWeight: 700,
+                            color: "var(--ink)", cursor: "pointer", display: "flex",
+                            alignItems: "center", gap: 12, transition: "background 0.15s"
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.background = "var(--paper)"}
+                          onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                        >
+                          <img src={img} alt={cat.nom} style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover", border: "1px solid var(--line)" }} />
+                          <span>{cat.nom}</span>
+                        </div>
+                      );
+                    });
+                  })()}
                 </div>
               )}
             </div>
 
             {/* HORIZONTAL GALLERY / PILL LIST OF CATEGORIES */}
             <div style={{ display: "flex", gap: 10, overflowX: "auto", scrollbarWidth: "none", msOverflowStyle: "none", padding: "4px 0", flex: 1, minWidth: 0 }}>
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => navigate(`/catalogue?categoryId=${cat.id}`)}
-                  style={{
-                    background: "var(--card)", border: "1px solid var(--line)",
-                    borderRadius: 22, padding: "7px 18px", fontSize: 13,
-                    fontWeight: 700, color: "var(--ink)", cursor: "pointer",
-                    whiteSpace: "nowrap", display: "inline-flex", alignItems: "center",
-                    gap: 8, transition: "all 0.15s ease", boxShadow: "0 1px 4px rgba(0,0,0,0.03)"
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = "var(--forest-light)"; e.currentTarget.style.borderColor = "var(--forest)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = "var(--card)"; e.currentTarget.style.borderColor = "var(--line)"; }}
-                >
-                  {cat.imageUrl && (
-                    <img src={cat.imageUrl} alt={cat.nom} style={{ width: 22, height: 22, borderRadius: "50%", objectFit: "cover" }} />
-                  )}
-                  <span>{cat.nom}</span>
-                </button>
-              ))}
+              {(() => {
+                const btpCategories = categories.filter(cat => {
+                  const n = (cat.nom || "").toLowerCase();
+                  return !n.includes("chargeur") && !n.includes("glace") && !n.includes("coque") && 
+                         !n.includes("écouteur") && !n.includes("câble") && !n.includes("powerbank") && 
+                         !n.includes("support");
+                });
+
+                function getHeaderCatImg(nom, img) {
+                  if (img && img.trim()) return img;
+                  const n = (nom || "").toLowerCase();
+                  if (n.includes("ciment") || n.includes("liant")) return "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=400&q=80";
+                  if (n.includes("fer") || n.includes("métal")) return "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=400&q=80";
+                  if (n.includes("sable") || n.includes("gravier")) return "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=400&q=80";
+                  if (n.includes("bois") || n.includes("planche")) return "https://images.unsplash.com/photo-1520038410233-7141be7e6f97?auto=format&fit=crop&w=400&q=80";
+                  if (n.includes("contreplaqué") || n.includes("panneau")) return "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=400&q=80";
+                  if (n.includes("quincaillerie")) return "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=400&q=80";
+                  if (n.includes("outil")) return "https://images.unsplash.com/photo-1581783342308-f792dbdd27c5?auto=format&fit=crop&w=400&q=80";
+                  if (n.includes("peint")) return "https://images.unsplash.com/photo-1562259949-e8e7689d7828?auto=format&fit=crop&w=400&q=80";
+                  return "https://images.unsplash.com/photo-1541888946425-d0fbb180c5f7?auto=format&fit=crop&w=400&q=80";
+                }
+
+                return btpCategories.map((cat) => {
+                  const img = getHeaderCatImg(cat.nom, cat.imageUrl);
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => navigate(`/catalogue?categoryId=${cat.id}`)}
+                      style={{
+                        background: "var(--card)", border: "1px solid var(--line)",
+                        borderRadius: 22, padding: "7px 18px", fontSize: 13,
+                        fontWeight: 700, color: "var(--ink)", cursor: "pointer",
+                        whiteSpace: "nowrap", display: "inline-flex", alignItems: "center",
+                        gap: 8, transition: "all 0.15s ease", boxShadow: "0 1px 4px rgba(0,0,0,0.03)"
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = "var(--forest-light)"; e.currentTarget.style.borderColor = "var(--forest)"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = "var(--card)"; e.currentTarget.style.borderColor = "var(--line)"; }}
+                    >
+                      <img src={img} alt={cat.nom} style={{ width: 22, height: 22, borderRadius: "50%", objectFit: "cover" }} />
+                      <span>{cat.nom}</span>
+                    </button>
+                  );
+                });
+              })()}
             </div>
 
           </div>

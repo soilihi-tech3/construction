@@ -77,3 +77,4 @@ const Service = sequelize.define(
 );
 
 module.exports = Service;
+

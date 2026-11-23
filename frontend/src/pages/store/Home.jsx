@@ -46,15 +46,29 @@ const DEFAULT_SLIDES = [
 ];
 
 const DEFAULT_BTP_CATEGORIES = [
-  { id: 1, nom: "Ciment & Liants", description: "Ciment Portland, chaux, colles et mortiers", iconType: "box" },
-  { id: 2, nom: "Fer à béton & Métallerie", description: "Barres HA, treillis soudés, fils de fer", iconType: "grid" },
-  { id: 3, nom: "Bois & Planches", description: "Planches, chevrons, madriers", iconType: "layers" },
-  { id: 4, nom: "Contreplaqué & Panneaux", description: "Contreplaqué marine, MDF, panneaux de coffrage", iconType: "layers" },
-  { id: 5, nom: "Sable & Gravier", description: "Sable concassé, gravier 8m³, ballast pour béton", iconType: "truck" },
-  { id: 6, nom: "Quincaillerie", description: "Clous, vis, boulons, charnières", iconType: "wrench" },
-  { id: 7, nom: "Outillage", description: "Brouettes, pelles, pioches, truelles", iconType: "hammer" },
-  { id: 8, nom: "Peinture & Finition", description: "Peintures, enduits, pinceaux, rouleaux", iconType: "paintbrush" }
+  { id: 8, nom: "Ciment & Liants", description: "Ciment Portland 42.5R, chaux, colles carrelage et mortiers prêts à l'emploi", iconType: "box", imageUrl: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=800&q=80" },
+  { id: 9, nom: "Fer à béton & Métallerie", description: "Barres fer torsadé HA Ø 8 à 16, treillis soudés, fils de fer et étriers", iconType: "grid", imageUrl: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80" },
+  { id: 10, nom: "Sable & Gravier", description: "Sable noir concassé de carrière et gravier pour béton par camion complet 8 m³", iconType: "truck", imageUrl: "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=800&q=80" },
+  { id: 11, nom: "Bois & Planches", description: "Planches de coffrage, chevrons, madriers et bastaings bois rouge traité", iconType: "layers", imageUrl: "https://images.unsplash.com/photo-1520038410233-7141be7e6f97?auto=format&fit=crop&w=800&q=80" },
+  { id: 12, nom: "Contreplaqué & Panneaux", description: "Contreplaqué marine hydrofuge, MDF et panneaux de coffrage bakélisés", iconType: "layers", imageUrl: "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80" },
+  { id: 13, nom: "Quincaillerie", description: "Clous acier, vis à bois, boulons charpente, chevilles et charnières", iconType: "wrench", imageUrl: "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=800&q=80" },
+  { id: 14, nom: "Outillage", description: "Brouettes renforcées, pelles de chantier, pioches, truelles et niveaux", iconType: "hammer", imageUrl: "https://images.unsplash.com/photo-1581783342308-f792dbdd27c5?auto=format&fit=crop&w=800&q=80" },
+  { id: 15, nom: "Peinture & Finition", description: "Peintures extérieures anti-humidité, enduits de lissage, rouleaux et pinceaux", iconType: "paintbrush", imageUrl: "https://images.unsplash.com/photo-1562259949-e8e7689d7828?auto=format&fit=crop&w=800&q=80" }
 ];
+
+function getCategoryImageUrl(nom, currentImg) {
+  if (currentImg && currentImg.trim()) return currentImg;
+  const n = (nom || "").toLowerCase();
+  if (n.includes("ciment") || n.includes("liant")) return "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=800&q=80";
+  if (n.includes("fer") || n.includes("métal")) return "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80";
+  if (n.includes("sable") || n.includes("gravier")) return "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=800&q=80";
+  if (n.includes("bois") || n.includes("planche")) return "https://images.unsplash.com/photo-1520038410233-7141be7e6f97?auto=format&fit=crop&w=800&q=80";
+  if (n.includes("contreplaqué") || n.includes("panneau")) return "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80";
+  if (n.includes("quincaillerie")) return "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=800&q=80";
+  if (n.includes("outil")) return "https://images.unsplash.com/photo-1581783342308-f792dbdd27c5?auto=format&fit=crop&w=800&q=80";
+  if (n.includes("peint")) return "https://images.unsplash.com/photo-1562259949-e8e7689d7828?auto=format&fit=crop&w=800&q=80";
+  return "https://images.unsplash.com/photo-1541888946425-d0fbb180c5f7?auto=format&fit=crop&w=800&q=80";
+}
 
 function getCategoryIconComponent(nom, iconType) {
   const n = (nom || "").toLowerCase();
@@ -384,14 +398,21 @@ export default function Home() {
   }, [slides.length]);
 
   const safeProducts = Array.isArray(products) ? products : [];
+  const btpProducts = safeProducts.filter(p => {
+    const n = (p.nom || "").toLowerCase();
+    return !n.includes("chargeur") && !n.includes("glace") && !n.includes("coque") && 
+           !n.includes("iphone") && !n.includes("samsung") && !n.includes("écouteur") && 
+           !n.includes("airpod") && !n.includes("powerbank");
+  });
+
   const safeCategories = Array.isArray(categories) ? categories : [];
   const safeFamilles = Array.isArray(familles) && familles.length > 0
     ? familles
     : [
-        { id: 1, nom: "Chargeurs & Blocs Rapides" },
-        { id: 2, nom: "Glaces & Protections Écran" },
-        { id: 3, nom: "Pochettes & Coques Antichoc" },
-        { id: 4, nom: "Écouteurs, Casques & Audio" }
+        { id: 1, nom: "Gros Œuvre & Fondations" },
+        { id: 2, nom: "Menuiserie & Coffrage" },
+        { id: 3, nom: "Outillage & Quincaillerie" },
+        { id: 4, nom: "Peinture & Finition" }
       ];
 
   function getNormalizedFamilleName(str) {
@@ -616,20 +637,24 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 2. CATÉGORIES EN HAUT : 8 GRANDES CARTES MODERNES (Fidèle à la maquette Ets Lihoma) */}
+      {/* 2. CATÉGORIES EN HAUT : STRICTEMENT 8 GRANDES CARTES MODERNES AVEC PHOTOS (Fidèle à la maquette Ets Lihoma) */}
       {(() => {
-        const displayCategories = safeCategories.length >= 4 
-          ? safeCategories.slice(0, 8) 
-          : DEFAULT_BTP_CATEGORIES;
+        const btpCats = safeCategories.filter(c => {
+          const n = (c.nom || "").toLowerCase();
+          return !n.includes("chargeur") && !n.includes("glace") && !n.includes("coque") && 
+                 !n.includes("écouteur") && !n.includes("câble") && !n.includes("powerbank") && 
+                 !n.includes("support");
+        });
+        const displayCategories = (btpCats.length >= 4 ? btpCats : DEFAULT_BTP_CATEGORIES).slice(0, 8);
 
         return (
-          <div style={{ marginTop: 44, marginBottom: 36 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 12, marginBottom: 20 }}>
+          <div style={{ marginTop: 44, marginBottom: 40 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 12, marginBottom: 22 }}>
               <div>
-                <h2 style={{ fontSize: "clamp(22px, 3.5vw, 28px)", fontWeight: 800, color: "var(--ink)", margin: 0 }}>
+                <h2 style={{ fontSize: "clamp(22px, 3.5vw, 28px)", fontWeight: 800, color: "var(--ink, #0F172A)", margin: 0 }}>
                   Nos catégories de produits
                 </h2>
-                <p style={{ margin: "6px 0 0", color: "var(--muted)", fontSize: 14.5 }}>
+                <p style={{ margin: "6px 0 0", color: "var(--muted, #64748B)", fontSize: 14.5 }}>
                   Tout le nécessaire pour vos chantiers, du gros œuvre à la finition.
                 </p>
               </div>
@@ -649,10 +674,12 @@ export default function Home() {
             <div style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-              gap: 16
+              gap: 20
             }}>
               {displayCategories.map((c, idx) => {
                 const IconComp = getCategoryIconComponent(c.nom, c.iconType);
+                const categoryImg = getCategoryImageUrl(c.nom, c.imageUrl);
+
                 return (
                   <div
                     key={c.id || idx}
@@ -660,40 +687,113 @@ export default function Home() {
                     style={{
                       background: "#fff",
                       border: "1px solid var(--line, #e2e8f0)",
-                      borderRadius: 16,
-                      padding: "20px 22px",
+                      borderRadius: 18,
+                      overflow: "hidden",
                       cursor: "pointer",
-                      transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
-                      boxShadow: "0 2px 6px rgba(0,0,0,0.02)",
+                      transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
                       display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "space-between"
+                      flexDirection: "column"
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = "translateY(-3px)";
-                      e.currentTarget.style.boxShadow = "0 10px 24px rgba(0,0,0,0.06)";
+                      e.currentTarget.style.transform = "translateY(-4px)";
+                      e.currentTarget.style.boxShadow = "0 12px 28px rgba(0,0,0,0.09)";
                       e.currentTarget.style.borderColor = "#FDBA74";
+                      const img = e.currentTarget.querySelector(".cat-cover-img");
+                      if (img) img.style.transform = "scale(1.06)";
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = "translateY(0)";
-                      e.currentTarget.style.boxShadow = "0 2px 6px rgba(0,0,0,0.02)";
+                      e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.03)";
                       e.currentTarget.style.borderColor = "var(--line, #e2e8f0)";
+                      const img = e.currentTarget.querySelector(".cat-cover-img");
+                      if (img) img.style.transform = "scale(1)";
                     }}
                   >
-                    <div>
+                    {/* PHOTO DE LA CATÉGORIE AVEC BELLE HAUTEUR/LONGUEUR */}
+                    <div style={{
+                      position: "relative",
+                      width: "100%",
+                      height: 165,
+                      overflow: "hidden",
+                      background: "#F8FAFC"
+                    }}>
+                      <img 
+                        src={categoryImg}
+                        alt={c.nom}
+                        className="cat-cover-img"
+                        loading="lazy"
+                        decoding="async"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = "https://images.unsplash.com/photo-1541888946425-d0fbb180c5f7?auto=format&fit=crop&w=800&q=80";
+                        }}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          transition: "transform 0.4s ease"
+                        }}
+                      />
+
+                      {/* BADGE ICÔNE DISCRET DANS LE COIN */}
                       <div style={{
-                        width: 44, height: 44, borderRadius: 12,
-                        background: "#FFF7ED", color: "#EA580C",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        marginBottom: 14
+                        position: "absolute",
+                        top: 12,
+                        left: 12,
+                        width: 36,
+                        height: 36,
+                        borderRadius: 10,
+                        background: "rgba(255, 255, 255, 0.92)",
+                        backdropFilter: "blur(6px)",
+                        WebkitBackdropFilter: "blur(6px)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "#EA580C",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.12)"
                       }}>
-                        <IconComp size={22} />
+                        <IconComp size={18} />
                       </div>
-                      <div style={{ fontSize: 16, fontWeight: 800, color: "var(--ink)", lineHeight: 1.3 }}>
-                        {c.nom}
+                    </div>
+
+                    {/* DÉTAILS TEXTUELS */}
+                    <div style={{
+                      padding: "16px 18px 18px",
+                      display: "flex",
+                      flexDirection: "column",
+                      flex: 1,
+                      justifyContent: "space-between"
+                    }}>
+                      <div>
+                        <div style={{ fontSize: 16, fontWeight: 800, color: "var(--ink, #0F172A)", lineHeight: 1.3 }}>
+                          {c.nom}
+                        </div>
+                        <div style={{
+                          fontSize: 12.5,
+                          color: "var(--muted, #64748B)",
+                          marginTop: 6,
+                          lineHeight: 1.45,
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden"
+                        }}>
+                          {getCategoryDesc(c.nom, c.description)}
+                        </div>
                       </div>
-                      <div style={{ fontSize: 13, color: "var(--muted)", marginTop: 6, lineHeight: 1.45 }}>
-                        {getCategoryDesc(c.nom, c.description)}
+
+                      <div style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 5,
+                        color: "#EA580C",
+                        fontWeight: 700,
+                        fontSize: 13,
+                        marginTop: 12
+                      }}>
+                        <span>Explorer</span>
+                        <ArrowRight size={14} />
                       </div>
                     </div>
                   </div>
@@ -845,18 +945,18 @@ export default function Home() {
         );
       })()}
 
-      {/* 4. PRODUITS LES PLUS VENDUS (SUR 4 COLONNES DESKTOP) */}
+      {/* 4. PRODUITS LES PLUS VENDUS & POPULAIRES (SUR 4 COLONNES DESKTOP) */}
       {(() => {
-        const plusVendus = safeProducts.filter(p => p.isPlusVendu || (p.ventesCount && p.ventesCount > 0));
-        const toShow = plusVendus.length > 0 ? plusVendus.slice(0, 8) : safeProducts.slice(0, 4);
+        const plusVendus = btpProducts.filter(p => p.isPlusVendu || (p.ventesCount && p.ventesCount > 0));
+        const toShow = plusVendus.length > 0 ? plusVendus.slice(0, 8) : btpProducts.slice(0, 4);
 
         if (toShow.length === 0) return null;
 
         return (
           <div style={{ marginTop: 36, marginBottom: 36 }}>
             <div className="bs-section-title" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
-              <h2 style={{ margin: 0 }}>🔥 Les Plus Vendus</h2>
-              <button onClick={() => navigate("/catalogue")} style={{ background: "none", border: "none", color: "#2563EB", fontWeight: 700, cursor: "pointer", fontSize: 14 }}>
+              <h2 style={{ margin: 0, fontSize: "clamp(20px, 3vw, 24px)", fontWeight: 800, color: "var(--ink, #0F172A)" }}>🔥 Produits Populaires & Plus Vendus</h2>
+              <button onClick={() => navigate("/catalogue")} style={{ background: "none", border: "none", color: "#EA580C", fontWeight: 700, cursor: "pointer", fontSize: 14 }}>
                 Voir tout le catalogue →
               </button>
             </div>
@@ -867,18 +967,18 @@ export default function Home() {
         );
       })()}
 
-      {/* 5. PRODUITS RECOMMANDÉS (SUR 4 COLONNES DESKTOP) */}
+      {/* 5. MATÉRIAUX RECOMMANDÉS PAR NOS EXPERTS (SUR 4 COLONNES DESKTOP) */}
       {(() => {
-        const recommandes = safeProducts.filter(p => p.isRecommande);
-        const toShow = recommandes.length > 0 ? recommandes.slice(0, 8) : safeProducts.slice(4, 8);
+        const recommandes = btpProducts.filter(p => p.isRecommande);
+        const toShow = recommandes.length > 0 ? recommandes.slice(0, 8) : btpProducts.slice(4, 8);
 
         if (toShow.length === 0) return null;
 
         return (
           <div style={{ marginTop: 36, marginBottom: 36 }}>
             <div className="bs-section-title" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
-              <h2 style={{ margin: 0 }}>⭐ Recommandés par nos Experts</h2>
-              <button onClick={() => navigate("/catalogue")} style={{ background: "none", border: "none", color: "#2563EB", fontWeight: 700, cursor: "pointer", fontSize: 14 }}>
+              <h2 style={{ margin: 0, fontSize: "clamp(20px, 3vw, 24px)", fontWeight: 800, color: "var(--ink, #0F172A)" }}>⭐ Recommandés pour vos Chantiers</h2>
+              <button onClick={() => navigate("/catalogue")} style={{ background: "none", border: "none", color: "#EA580C", fontWeight: 700, cursor: "pointer", fontSize: 14 }}>
                 Voir tout →
               </button>
             </div>
@@ -890,11 +990,11 @@ export default function Home() {
       })()}
 
       {/* 6. NOUVEAUX ARRIVAGES MATÉRIAUX */}
-      {safeProducts.length > 0 && (() => {
-        const customNouveaux = safeProducts.filter(p => p.isNouveau || p.isNouveau === true || p.isNouveau === 1);
+      {btpProducts.length > 0 && (() => {
+        const customNouveaux = btpProducts.filter(p => p.isNouveau || p.isNouveau === true || p.isNouveau === 1);
         const displayNouveaux = customNouveaux.length > 0 
           ? customNouveaux 
-          : [...safeProducts].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 8);
+          : [...btpProducts].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 8);
 
         return (
           <CategoryScrollSection

@@ -571,3 +571,4 @@ export default function CorporateInvoiceA4({ order, boutique, cashierName }) {
     </div>
   );
 }
+
