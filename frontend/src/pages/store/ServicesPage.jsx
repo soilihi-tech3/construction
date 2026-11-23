@@ -68,130 +68,75 @@ export default function ServicesPage() {
           <p style={{ color: "var(--muted)" }}>Contactez-nous directement pour vos demandes de travaux.</p>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 24 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))", gap: 24 }}>
           {services.map((s) => (
             <div
               key={s.id}
+              onClick={() => openServiceModal(s)}
               style={{
-                background: "#fff",
-                border: "1px solid var(--line)",
-                borderRadius: 20,
+                position: "relative",
+                height: 230,
+                borderRadius: 16,
                 overflow: "hidden",
-                boxShadow: "0 4px 14px rgba(0,0,0,0.04)",
-                display: "flex",
-                flexDirection: "column",
-                transition: "all 0.3s ease"
+                cursor: "pointer",
+                boxShadow: "0 6px 18px rgba(0,0,0,0.08)",
+                transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)"
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = "translateY(-4px)";
-                e.currentTarget.style.boxShadow = "0 12px 28px rgba(0,0,0,0.1)";
+                e.currentTarget.style.boxShadow = "0 16px 32px rgba(0,0,0,0.18)";
+                const img = e.currentTarget.querySelector(".srv-page-img");
+                if (img) img.style.transform = "scale(1.05)";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = "0 4px 14px rgba(0,0,0,0.04)";
+                e.currentTarget.style.boxShadow = "0 6px 18px rgba(0,0,0,0.08)";
+                const img = e.currentTarget.querySelector(".srv-page-img");
+                if (img) img.style.transform = "scale(1)";
               }}
             >
-              {/* Photo du service */}
-              <div 
-                style={{ height: 210, position: "relative", cursor: "pointer", overflow: "hidden" }}
-                onClick={() => openServiceModal(s)}
-              >
-                <img
-                  src={s.imageUrl}
-                  alt={s.nom}
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
-                <div style={{
-                  position: "absolute", inset: 0,
-                  background: "linear-gradient(to top, rgba(15,23,42,0.85) 0%, rgba(15,23,42,0.2) 60%, transparent 100%)",
-                  display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "18px"
+              <img
+                src={s.imageUrl}
+                alt={s.nom}
+                className="srv-page-img"
+                style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s ease" }}
+              />
+              <div style={{
+                position: "absolute",
+                inset: 0,
+                background: "rgba(0, 0, 0, 0.45)",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "24px",
+                textAlign: "center"
+              }}>
+                <h2 style={{
+                  color: "#ffffff",
+                  fontSize: "clamp(26px, 3.5vw, 32px)",
+                  fontWeight: 800,
+                  margin: "0 0 10px",
+                  letterSpacing: "-0.5px",
+                  textShadow: "0 2px 12px rgba(0,0,0,0.7)"
                 }}>
-                  <div style={{ color: "#fff", fontSize: 20, fontWeight: 900 }}>
-                    {s.nom}
-                  </div>
-                  <div style={{ color: "rgba(255,255,255,0.9)", fontSize: 13, fontWeight: 700, marginTop: 4 }}>
-                    {s.tarif || "Sur devis gratuit"}
-                  </div>
+                  {s.nom}
+                </h2>
+                <div style={{
+                  color: "rgba(255,255,255,0.9)",
+                  fontSize: 13.5,
+                  fontWeight: 600,
+                  background: "rgba(0,0,0,0.35)",
+                  padding: "6px 16px",
+                  borderRadius: 20,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6
+                }}>
+                  <span>{s.tarif || "Sur devis gratuit"}</span>
+                  <span>·</span>
+                  <span style={{ color: "#FDBA74", fontWeight: 700 }}>Voir détails & chantiers →</span>
                 </div>
-              </div>
-
-              {/* Description & Détails */}
-              <div style={{ padding: "20px", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                <div>
-                  <p style={{ margin: "0 0 16px", color: "var(--muted)", fontSize: 14, lineHeight: 1.6 }}>
-                    {s.description}
-                  </p>
-
-                  {/* Conditions */}
-                  {s.conditions && (
-                    <div style={{ background: "#F8FAFC", border: "1px solid #E2E8F0", borderRadius: 12, padding: "12px 14px", marginBottom: 16 }}>
-                      <div style={{ fontSize: 12, fontWeight: 800, color: "var(--ink)", marginBottom: 4, display: "flex", alignItems: "center", gap: 6 }}>
-                        <MapPin size={14} color="#EA580C" /> Conditions & Zones
-                      </div>
-                      <div style={{ fontSize: 12.5, color: "var(--muted)", lineHeight: 1.45 }}>
-                        {s.conditions}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Responsable */}
-                  {s.chefNom && (
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)", marginBottom: 14, display: "flex", alignItems: "center", gap: 6 }}>
-                      <HardHat size={16} color="#0F766E" /> Responsable : {s.chefNom}
-                    </div>
-                  )}
-
-                  {/* Miniatures réalisations */}
-                  {Array.isArray(s.photosRealisation) && s.photosRealisation.length > 0 && (
-                    <div style={{ marginBottom: 18 }}>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: "var(--muted)", marginBottom: 8 }}>
-                        Chantiers réalisés ({s.photosRealisation.length}) :
-                      </div>
-                      <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4 }}>
-                        {s.photosRealisation.map((pUrl, pIdx) => (
-                          <img
-                            key={pIdx}
-                            src={pUrl}
-                            alt={`Chantier ${pIdx + 1}`}
-                            onClick={() => setSelectedImagePreview(pUrl)}
-                            style={{ width: 60, height: 60, borderRadius: 8, objectFit: "cover", cursor: "pointer", border: "1px solid var(--line)" }}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Bouton Contact WhatsApp Direct */}
-                {(() => {
-                  const phone = (s.chefTelephone || boutique?.whatsappNumber || boutique?.telephone || "+269 333 00 00").replace(/[^0-9]/g, "");
-                  const msg = `Bonjour,\n\nJe suis intéressé par votre service de : *${s.nom}*.\nTarif indicatif : ${s.tarif || "Sur devis"}.\nPouvez-vous me donner plus d'informations pour mon projet aux Comores ?`;
-                  const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
-
-                  return (
-                    <a
-                      href={waUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: 8,
-                        background: "#16A34A",
-                        color: "#fff",
-                        padding: "12px 18px",
-                        borderRadius: 12,
-                        fontWeight: 800,
-                        fontSize: 14,
-                        textDecoration: "none",
-                        boxShadow: "0 4px 12px rgba(22, 163, 74, 0.2)"
-                      }}
-                    >
-                      <MessageCircle size={18} /> Demander un devis sur WhatsApp
-                    </a>
-                  );
-                })()}
               </div>
             </div>
           ))}

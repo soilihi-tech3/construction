@@ -637,7 +637,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 2. CATÉGORIES EN HAUT : STRICTEMENT 8 GRANDES CARTES MODERNES AVEC PHOTOS (Fidèle à la maquette Ets Lihoma) */}
+      {/* 2. CATÉGORIES EN HAUT : STRICTEMENT 8 GRANDES CARTES IMMERSIVES PLEINE IMAGE (COMPLÈTEMENT DISTINCTES DES PRODUITS) */}
       {(() => {
         const btpCats = safeCategories.filter(c => {
           const n = (c.nom || "").toLowerCase();
@@ -648,7 +648,7 @@ export default function Home() {
         const displayCategories = (btpCats.length >= 4 ? btpCats : DEFAULT_BTP_CATEGORIES).slice(0, 8);
 
         return (
-          <div style={{ marginTop: 44, marginBottom: 40 }}>
+          <div style={{ marginTop: 44, marginBottom: 44 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 12, marginBottom: 22 }}>
               <div>
                 <h2 style={{ fontSize: "clamp(22px, 3.5vw, 28px)", fontWeight: 800, color: "var(--ink, #0F172A)", margin: 0 }}>
@@ -685,115 +685,113 @@ export default function Home() {
                     key={c.id || idx}
                     onClick={() => navigate(`/catalogue?categoryId=${c.id}`)}
                     style={{
-                      background: "#fff",
-                      border: "1px solid var(--line, #e2e8f0)",
-                      borderRadius: 18,
+                      position: "relative",
+                      height: 205,
+                      borderRadius: 16,
                       overflow: "hidden",
                       cursor: "pointer",
-                      transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
-                      display: "flex",
-                      flexDirection: "column"
+                      boxShadow: "0 4px 14px rgba(0,0,0,0.06)",
+                      transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)"
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = "translateY(-4px)";
-                      e.currentTarget.style.boxShadow = "0 12px 28px rgba(0,0,0,0.09)";
-                      e.currentTarget.style.borderColor = "#FDBA74";
-                      const img = e.currentTarget.querySelector(".cat-cover-img");
+                      e.currentTarget.style.boxShadow = "0 14px 28px rgba(0,0,0,0.18)";
+                      const img = e.currentTarget.querySelector(".cat-bg-img");
                       if (img) img.style.transform = "scale(1.06)";
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = "translateY(0)";
-                      e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.03)";
-                      e.currentTarget.style.borderColor = "var(--line, #e2e8f0)";
-                      const img = e.currentTarget.querySelector(".cat-cover-img");
+                      e.currentTarget.style.boxShadow = "0 4px 14px rgba(0,0,0,0.06)";
+                      const img = e.currentTarget.querySelector(".cat-bg-img");
                       if (img) img.style.transform = "scale(1)";
                     }}
                   >
-                    {/* PHOTO DE LA CATÉGORIE AVEC BELLE HAUTEUR/LONGUEUR */}
-                    <div style={{
-                      position: "relative",
-                      width: "100%",
-                      height: 165,
-                      overflow: "hidden",
-                      background: "#F8FAFC"
-                    }}>
-                      <img 
-                        src={categoryImg}
-                        alt={c.nom}
-                        className="cat-cover-img"
-                        loading="lazy"
-                        decoding="async"
-                        onError={(e) => {
-                          e.currentTarget.onerror = null;
-                          e.currentTarget.src = "https://images.unsplash.com/photo-1541888946425-d0fbb180c5f7?auto=format&fit=crop&w=800&q=80";
-                        }}
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                          transition: "transform 0.4s ease"
-                        }}
-                      />
+                    {/* PHOTO EN FOND PLEIN ÉCRAN */}
+                    <img 
+                      src={categoryImg}
+                      alt={c.nom}
+                      className="cat-bg-img"
+                      loading="lazy"
+                      decoding="async"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = "https://images.unsplash.com/photo-1541888946425-d0fbb180c5f7?auto=format&fit=crop&w=800&q=80";
+                      }}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        transition: "transform 0.4s ease"
+                      }}
+                    />
 
-                      {/* BADGE ICÔNE DISCRET DANS LE COIN */}
+                    {/* OVERLAY SOMBRE ÉLÉGANT & TEXTE CENTRÉ */}
+                    <div style={{
+                      position: "absolute",
+                      inset: 0,
+                      background: "linear-gradient(to top, rgba(15,23,42,0.88) 0%, rgba(15,23,42,0.45) 50%, rgba(15,23,42,0.3) 100%)",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: "20px",
+                      textAlign: "center"
+                    }}>
                       <div style={{
-                        position: "absolute",
-                        top: 12,
-                        left: 12,
-                        width: 36,
-                        height: 36,
-                        borderRadius: 10,
-                        background: "rgba(255, 255, 255, 0.92)",
+                        width: 38,
+                        height: 38,
+                        borderRadius: 12,
+                        background: "rgba(255, 255, 255, 0.2)",
                         backdropFilter: "blur(6px)",
                         WebkitBackdropFilter: "blur(6px)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        color: "#EA580C",
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.12)"
+                        color: "#FDBA74",
+                        marginBottom: 10
                       }}>
-                        <IconComp size={18} />
+                        <IconComp size={20} />
                       </div>
-                    </div>
 
-                    {/* DÉTAILS TEXTUELS */}
-                    <div style={{
-                      padding: "16px 18px 18px",
-                      display: "flex",
-                      flexDirection: "column",
-                      flex: 1,
-                      justifyContent: "space-between"
-                    }}>
-                      <div>
-                        <div style={{ fontSize: 16, fontWeight: 800, color: "var(--ink, #0F172A)", lineHeight: 1.3 }}>
-                          {c.nom}
-                        </div>
-                        <div style={{
-                          fontSize: 12.5,
-                          color: "var(--muted, #64748B)",
-                          marginTop: 6,
-                          lineHeight: 1.45,
-                          display: "-webkit-box",
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: "vertical",
-                          overflow: "hidden"
-                        }}>
-                          {getCategoryDesc(c.nom, c.description)}
-                        </div>
+                      <h3 style={{
+                        color: "#ffffff",
+                        fontSize: "clamp(18px, 2.2vw, 21px)",
+                        fontWeight: 800,
+                        margin: "0 0 6px",
+                        letterSpacing: "-0.3px",
+                        textShadow: "0 2px 8px rgba(0,0,0,0.7)"
+                      }}>
+                        {c.nom}
+                      </h3>
+
+                      <div style={{
+                        color: "rgba(255,255,255,0.88)",
+                        fontSize: 12.5,
+                        lineHeight: 1.4,
+                        maxWidth: "92%",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                        textShadow: "0 1px 4px rgba(0,0,0,0.5)"
+                      }}>
+                        {getCategoryDesc(c.nom, c.description)}
                       </div>
 
                       <div style={{
-                        display: "flex",
+                        marginTop: 10,
+                        color: "#FDBA74",
+                        fontSize: 12,
+                        fontWeight: 700,
+                        display: "inline-flex",
                         alignItems: "center",
                         gap: 5,
-                        color: "#EA580C",
-                        fontWeight: 700,
-                        fontSize: 13,
-                        marginTop: 12
+                        background: "rgba(0,0,0,0.3)",
+                        padding: "4px 12px",
+                        borderRadius: 20
                       }}>
                         <span>Explorer</span>
-                        <ArrowRight size={14} />
+                        <ArrowRight size={13} />
                       </div>
                     </div>
                   </div>
@@ -836,12 +834,12 @@ export default function Home() {
           },
           {
             id: 3,
-            nom: "Peinture & Finition",
+            nom: "Peinture",
             description: "Peinture intérieure et extérieure, préparation des supports, enduits de lissage et revêtements anti-humidité tropicale.",
             tarif: "Sur devis gratuit",
             conditions: "Nettoyage de fin de chantier inclus.",
             chefNom: "Responsable Peinture M. Soilihi",
-            chefTelephone: boutique?.whatsappNumber || boutique?.telephone || "+269 333 00 00",
+            chefTelephone: boutique?.whatsappNumber || boutique?.telephone || "+269 342 08 08",
             imageUrl: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=800&q=80",
             photosRealisation: [
               "https://images.unsplash.com/photo-1562259949-e8e7689d7828?auto=format&fit=crop&w=800&q=80"
@@ -849,15 +847,41 @@ export default function Home() {
           },
           {
             id: 4,
-            nom: "Plomberie & Sanitaire",
+            nom: "Carrelage",
+            description: "Pose professionnelle de carrelage au sol, faïence murale de salles de bains et terrasses avec joints hydrofuges.",
+            tarif: "Sur devis gratuit",
+            conditions: "Ragréage et calepinage précis réalisés avant pose.",
+            chefNom: "Youssouf Bacar (Carreleur)",
+            chefTelephone: boutique?.whatsappNumber || boutique?.telephone || "+269 342 08 08",
+            imageUrl: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80",
+            photosRealisation: [
+              "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80"
+            ]
+          },
+          {
+            id: 5,
+            nom: "Plomberie",
             description: "Réseaux d'eau potable, évacuations PVC, fosses septiques ventilées, sanitaires, surpresseurs et citernes.",
             tarif: "Sur devis gratuit",
             conditions: "Tests d'étanchéité et mise en eau systématiques.",
             chefNom: "Chef Plombier M. Nassor",
-            chefTelephone: boutique?.whatsappNumber || boutique?.telephone || "+269 333 00 00",
+            chefTelephone: boutique?.whatsappNumber || boutique?.telephone || "+269 342 08 08",
             imageUrl: "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=800&q=80",
             photosRealisation: [
               "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=800&q=80"
+            ]
+          },
+          {
+            id: 6,
+            nom: "Architecture",
+            description: "Conception de plans 2D/3D, métrés précis, estimation quantitative et supervision technique des fondations à la toiture.",
+            tarif: "Sur devis gratuit",
+            conditions: "Rendez-vous sur chantier ou échange à distance pour la diaspora.",
+            chefNom: "Ing. Nassim Abdallah",
+            chefTelephone: boutique?.whatsappNumber || boutique?.telephone || "+269 342 08 08",
+            imageUrl: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=80",
+            photosRealisation: [
+              "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=80"
             ]
           }
         ];
@@ -865,42 +889,69 @@ export default function Home() {
         const displayServices = services && services.length > 0 ? services : defaultBtpServices;
 
         return (
-          <div style={{ marginTop: 44, marginBottom: 44 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 12, marginBottom: 20 }}>
-              <div>
-                <h2 style={{ fontSize: "clamp(22px, 3.5vw, 28px)", fontWeight: 800, color: "var(--ink)", margin: 0 }}>
-                  Nos Services
-                </h2>
-                <p style={{ margin: "6px 0 0", color: "var(--muted)", fontSize: 14.5 }}>
-                  Réalisez vos travaux avec notre équipe d'experts BTP aux Comores !
-                </p>
+          <div style={{ marginTop: 50, marginBottom: 50 }}>
+            {/* EN-TÊTE CENTRÉ COMME SUR COMORESHOULA.COM */}
+            <div style={{ textAlign: "center", marginBottom: 30 }}>
+              <h2 style={{
+                color: "#DC2626",
+                fontSize: "clamp(26px, 4vw, 34px)",
+                fontWeight: 900,
+                margin: "0 0 10px",
+                letterSpacing: "-0.5px"
+              }}>
+                Nos Services
+              </h2>
+              <div style={{
+                fontSize: "clamp(16px, 2.5vw, 20px)",
+                fontWeight: 800,
+                color: "#0F172A",
+                marginBottom: 10
+              }}>
+                Réalisez vos travaux avec notre équipe d'experts BTP aux Comores !
               </div>
-              <button 
-                onClick={() => navigate("/services")}
-                style={{
-                  background: "none", border: "none", color: "#2563EB",
-                  fontSize: 15, fontWeight: 700, cursor: "pointer",
-                  display: "inline-flex", alignItems: "center", gap: 6,
-                  padding: "4px 0"
-                }}
-              >
-                Voir tous les services →
-              </button>
+              <p style={{
+                maxWidth: 820,
+                margin: "0 auto",
+                color: "#64748B",
+                fontSize: 15,
+                lineHeight: 1.6
+              }}>
+                Nous vous accompagnons dans tous vos projets de construction : maçonnerie, électricité, peinture, carrelage et plomberie. Nous garantissons un travail soigné et de qualité.
+              </p>
+              <div style={{ marginTop: 12 }}>
+                <button 
+                  onClick={() => navigate("/services")}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "#EA580C",
+                    fontSize: 14,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6
+                  }}
+                >
+                  Voir tous les détails & tarifs →
+                </button>
+              </div>
             </div>
 
+            {/* GRILLE 2 COLONNES PANORAMIQUE FIDÈLE À LA MAQUETTE */}
             <div style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-              gap: 18
+              gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))",
+              gap: 20
             }}>
-              {displayServices.slice(0, 4).map((s) => (
+              {displayServices.slice(0, 6).map((s) => (
                 <div
                   key={s.id}
                   onClick={() => setActiveServiceModal(s)}
                   style={{
                     position: "relative",
-                    height: 210,
-                    borderRadius: 16,
+                    height: 220,
+                    borderRadius: 14,
                     overflow: "hidden",
                     cursor: "pointer",
                     boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
@@ -908,35 +959,49 @@ export default function Home() {
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = "translateY(-4px)";
-                    e.currentTarget.style.boxShadow = "0 14px 28px rgba(0,0,0,0.15)";
+                    e.currentTarget.style.boxShadow = "0 14px 28px rgba(0,0,0,0.18)";
+                    const img = e.currentTarget.querySelector(".srv-bg-img");
+                    if (img) img.style.transform = "scale(1.05)";
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.transform = "translateY(0)";
                     e.currentTarget.style.boxShadow = "0 4px 14px rgba(0,0,0,0.08)";
+                    const img = e.currentTarget.querySelector(".srv-bg-img");
+                    if (img) img.style.transform = "scale(1)";
                   }}
                 >
                   <img
                     src={s.imageUrl}
                     alt={s.nom}
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    className="srv-bg-img"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      transition: "transform 0.4s ease"
+                    }}
                   />
                   <div style={{
                     position: "absolute",
                     inset: 0,
-                    background: "linear-gradient(to top, rgba(15,23,42,0.85) 0%, rgba(15,23,42,0.3) 60%, transparent 100%)",
+                    background: "rgba(0, 0, 0, 0.42)",
                     display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "flex-end",
-                    padding: "20px"
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "20px",
+                    transition: "background 0.3s ease"
                   }}>
-                    <div style={{ color: "#fff", fontSize: 19, fontWeight: 800, textShadow: "0 2px 6px rgba(0,0,0,0.4)" }}>
+                    <h3 style={{
+                      color: "#ffffff",
+                      fontSize: "clamp(24px, 3.2vw, 30px)",
+                      fontWeight: 800,
+                      margin: 0,
+                      textAlign: "center",
+                      letterSpacing: "-0.4px",
+                      textShadow: "0 2px 10px rgba(0,0,0,0.7)"
+                    }}>
                       {s.nom}
-                    </div>
-                    <div style={{ color: "rgba(255,255,255,0.85)", fontSize: 13, marginTop: 4, display: "flex", alignItems: "center", gap: 6 }}>
-                      <span>{s.tarif || "Sur devis gratuit"}</span>
-                      <span>·</span>
-                      <span style={{ textDecoration: "underline" }}>Détails & Photos →</span>
-                    </div>
+                    </h3>
                   </div>
                 </div>
               ))}
