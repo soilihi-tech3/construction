@@ -22,6 +22,7 @@ import MyOrders from "./pages/store/MyOrders.jsx";
 import Login from "./pages/store/Login.jsx";
 import Register from "./pages/store/Register.jsx";
 import About from "./pages/store/About.jsx";
+import Contact from "./pages/store/Contact.jsx";
 import Profile from "./pages/store/Profile.jsx";
 import RechargeMobile from "./pages/store/RechargeMobile.jsx";
 import DemandeSurMesure from "./pages/store/DemandeSurMesure.jsx";
@@ -138,6 +139,7 @@ export default function App() {
         <Route path="/demande-sur-mesure" element={<StoreLayout><DemandeSurMesure /></StoreLayout>} />
         <Route path="/demande/:code" element={<StoreLayout><SuiviDemande /></StoreLayout>} />
         <Route path="/a-propos" element={<StoreLayout><About /></StoreLayout>} />
+        <Route path="/contact" element={<StoreLayout><Contact /></StoreLayout>} />
         <Route path="/catalogue" element={<StoreLayout><Catalogue /></StoreLayout>} />
         <Route path="/produit/:id" element={<StoreLayout><ProductDetail /></StoreLayout>} />
         <Route path="/connexion" element={<StoreLayout><Login /></StoreLayout>} />
