@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight, ArrowRight, Star, CheckCircle, MessageCircle, X, ZoomIn, Truck, ShieldCheck, Sparkles, Leaf, Zap, Lock, Headphones } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowRight, Star, CheckCircle, MessageCircle, X, ZoomIn, Truck, ShieldCheck, Sparkles, Leaf, Zap, Lock, Headphones, Box, Layers, Grid, Wrench, Hammer, Paintbrush, HardHat, Phone, ExternalLink, Calendar, MapPin, Check } from "lucide-react";
 import api, { SLUG } from "../../api";
 import ProductCard from "../../components/ProductCard.jsx";
 import { subscribeRealtime } from "../../utils/realtime.js";
@@ -9,41 +9,80 @@ import { useData } from "../../context/DataContext.jsx";
 const DEFAULT_SLIDES = [
   {
     id: 1,
-    tag: "LATEST TECH. PREMIUM QUALITY.",
-    titleLine1: "Powerful Tech.",
-    titleLine2: "Smarter Living.",
-    subtitle: "Découvrez nos smartphones, gadgets et accessoires dernière génération pour rester connecté, productif et performant au quotidien.",
-    imageUrl: "/images/tech_hero_gadgets.jpg",
-    buttonText: "SHOP NOW",
+    tag: "🏗️ GROS ŒUVRE & MATÉRIAUX BTP",
+    titleLine1: "Matériaux de Construction",
+    titleLine2: "Certifiés Haute Qualité",
+    subtitle: "Ciment Portland, fer à béton HA de 8 à 16, sable, gravier concassé en voyage complet et outillage professionnel livrés directement sur votre chantier aux Comores.",
+    imageUrl: "https://images.unsplash.com/photo-1541888946425-d0fbb180c5f7?auto=format&fit=crop&w=1200&q=80",
+    buttonText: "COMMANDER DES MATÉRIAUX",
     linkUrl: "/catalogue",
-    editorial: "TechHaven Essentials",
+    editorial: "Gros Œuvre & Fondations",
     objectPosition: "center center"
   },
   {
     id: 2,
-    tag: "CHARGE ULTRA RAPIDE GaN",
-    titleLine1: "Ultra Fast Power.",
-    titleLine2: "Zero Compromise.",
-    subtitle: "Chargeurs 20W à 65W, stations magnétiques et câbles renforcés certifiés anti-surchauffe pour tous vos appareils.",
-    imageUrl: "/images/tech_hero_chargers.jpg",
-    buttonText: "SHOP NOW",
-    linkUrl: "/catalogue?famille=Chargeurs",
-    editorial: "Performance GaN",
+    tag: "🚚 LIVRAISON PAR CAMION BENNE",
+    titleLine1: "Sable & Gravier Concasse",
+    titleLine2: "Livré sur Chantier",
+    subtitle: "Livraison par voyage complet de 8 m³ pour fondations et dalles sur tout Ngazidja (Moroni, Mboude, Bambao, Itsandra...). Frais de transport inclus.",
+    imageUrl: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1200&q=80",
+    buttonText: "VOIR LE SABLE & GRAVIER",
+    linkUrl: "/catalogue?famille=Sable",
+    editorial: "Agrégats & Béton",
     objectPosition: "center center"
   },
   {
     id: 3,
-    tag: "AUDIO SANS FIL & ÉNERGIE",
-    titleLine1: "Pure Sound.",
-    titleLine2: "Infinite Battery.",
-    subtitle: "AirPods, casques réducteurs de bruit et batteries 20 000mAh pour une liberté sonore et énergétique totale.",
-    imageUrl: "/images/tech_hero_audio.jpg",
-    buttonText: "SHOP NOW",
-    linkUrl: "/catalogue?famille=Audio",
-    editorial: "Son & Mobilité",
+    tag: "👷 NOS SERVICES BTP & ARTISANS",
+    titleLine1: "Maçonnerie, Électricité",
+    titleLine2: "& Finition Soignée",
+    subtitle: "Des équipes d'artisans maçons, plombiers, électriciens et peintres qualifiés pour bâtir et rénover vos projets dans le respect des normes et des délais.",
+    imageUrl: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=1200&q=80",
+    buttonText: "DÉCOUVRIR NOS SERVICES",
+    linkUrl: "/services",
+    editorial: "Prestations BTP",
     objectPosition: "center center"
   }
 ];
+
+const DEFAULT_BTP_CATEGORIES = [
+  { id: 1, nom: "Ciment & Liants", description: "Ciment Portland, chaux, colles et mortiers", iconType: "box" },
+  { id: 2, nom: "Fer à béton & Métallerie", description: "Barres HA, treillis soudés, fils de fer", iconType: "grid" },
+  { id: 3, nom: "Bois & Planches", description: "Planches, chevrons, madriers", iconType: "layers" },
+  { id: 4, nom: "Contreplaqué & Panneaux", description: "Contreplaqué marine, MDF, panneaux de coffrage", iconType: "layers" },
+  { id: 5, nom: "Sable & Gravier", description: "Sable concassé, gravier 8m³, ballast pour béton", iconType: "truck" },
+  { id: 6, nom: "Quincaillerie", description: "Clous, vis, boulons, charnières", iconType: "wrench" },
+  { id: 7, nom: "Outillage", description: "Brouettes, pelles, pioches, truelles", iconType: "hammer" },
+  { id: 8, nom: "Peinture & Finition", description: "Peintures, enduits, pinceaux, rouleaux", iconType: "paintbrush" }
+];
+
+function getCategoryIconComponent(nom, iconType) {
+  const n = (nom || "").toLowerCase();
+  if (n.includes("ciment") || n.includes("liant") || iconType === "box") return Box;
+  if (n.includes("fer") || n.includes("métal") || iconType === "grid") return Grid;
+  if (n.includes("bois") || n.includes("planche") || n.includes("panneau") || iconType === "layers") return Layers;
+  if (n.includes("sable") || n.includes("gravier") || iconType === "truck") return Truck;
+  if (n.includes("outil") || iconType === "hammer") return Hammer;
+  if (n.includes("quincaillerie") || iconType === "wrench") return Wrench;
+  if (n.includes("peint") || iconType === "paintbrush") return Paintbrush;
+  if (n.includes("plomb") || n.includes("electr")) return Zap;
+  return HardHat;
+}
+
+function getCategoryDesc(nom, customDesc) {
+  if (customDesc && customDesc.trim()) return customDesc;
+  const n = (nom || "").toLowerCase();
+  if (n.includes("ciment")) return "Ciment Portland, chaux, colles et mortiers";
+  if (n.includes("fer")) return "Barres HA, treillis soudés, fils de fer";
+  if (n.includes("bois")) return "Planches, chevrons, madriers";
+  if (n.includes("contreplaqué") || n.includes("panneau")) return "Contreplaqué marine, MDF, panneaux de coffrage";
+  if (n.includes("sable") || n.includes("gravier")) return "Sable concassé, gravier 8m³, ballast pour béton";
+  if (n.includes("outil")) return "Brouettes, pelles, pioches, truelles";
+  if (n.includes("quincaillerie")) return "Clous, vis, boulons, charnières";
+  if (n.includes("peint")) return "Peintures, enduits, pinceaux, rouleaux";
+  if (n.includes("plomb") || n.includes("electr")) return "Tuyaux PVC, raccords, câbles, disjoncteurs";
+  return "Matériaux certifiés pour vos chantiers";
+}
 
 
 const parseSlides = (bannerSlides, boutiqueNom = "") => {
@@ -248,6 +287,8 @@ export default function Home() {
   const [testimonials, setTestimonials] = useState([]);
   const [avisGenre, setAvisGenre] = useState("tous"); // 'tous' | 'femme' | 'homme'
   const [activeModalTestimonial, setActiveModalTestimonial] = useState(null);
+  const [services, setServices] = useState([]);
+  const [activeServiceModal, setActiveServiceModal] = useState(null);
 
   const [boutique, setBoutique] = useState(() => {
     try {
@@ -274,6 +315,12 @@ export default function Home() {
     api.get(`/store/${SLUG}/testimonials`).then((res) => {
       if (Array.isArray(res.data)) {
         setTestimonials(res.data);
+      }
+    }).catch(() => {});
+
+    api.get(`/store/${SLUG}/services`).then((res) => {
+      if (Array.isArray(res.data)) {
+        setServices(res.data);
       }
     }).catch(() => {});
 
@@ -569,42 +616,280 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 2. CATÉGORIES EN HAUT (TOUJOURS IMMÉDIATEMENT APRÈS LE BANNER) */}
-      <div className="bs-section-title">
-        <h2>Catégories Accessoires Téléphonie</h2>
-      </div>
-      <div className="bs-cats">
-        {safeCategories.map((c) => (
-          <div 
-            key={c.id} 
-            className="bs-cat-card" 
-            onClick={() => navigate(`/catalogue?categoryId=${c.id}`)}
-          >
-            <img 
-              src={c.imageUrl || "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=300&q=80"} 
-              alt={c.nom} 
-              loading="lazy"
-              decoding="async"
-              className="bs-cat-img" 
-            />
-            <div className="bs-cat-name">{c.nom}</div>
-          </div>
-        ))}
-      </div>
+      {/* 2. CATÉGORIES EN HAUT : 8 GRANDES CARTES MODERNES (Fidèle à la maquette Ets Lihoma) */}
+      {(() => {
+        const displayCategories = safeCategories.length >= 4 
+          ? safeCategories.slice(0, 8) 
+          : DEFAULT_BTP_CATEGORIES;
 
-      {/* 3. OFFRES & PROMOTIONS (EN SUITE) */}
-      {promos.length > 0 && (
-        <>
-          <div className="bs-section-title" style={{ marginTop: 36 }}>
-            <h2>Offres & Promotions</h2>
-          </div>
-          <div className="bs-grid-home">
-            {promos.map((p) => <ProductCard key={p.id} product={p} />)}
-          </div>
-        </>
-      )}
+        return (
+          <div style={{ marginTop: 44, marginBottom: 36 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 12, marginBottom: 20 }}>
+              <div>
+                <h2 style={{ fontSize: "clamp(22px, 3.5vw, 28px)", fontWeight: 800, color: "var(--ink)", margin: 0 }}>
+                  Nos catégories de produits
+                </h2>
+                <p style={{ margin: "6px 0 0", color: "var(--muted)", fontSize: 14.5 }}>
+                  Tout le nécessaire pour vos chantiers, du gros œuvre à la finition.
+                </p>
+              </div>
+              <button 
+                onClick={() => navigate("/catalogue")}
+                style={{
+                  background: "none", border: "none", color: "#EA580C",
+                  fontSize: 15, fontWeight: 700, cursor: "pointer",
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "4px 0"
+                }}
+              >
+                Voir tout →
+              </button>
+            </div>
 
-      {/* 4. NOUVEAUX ARRIVAGES (PUIS) */}
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+              gap: 16
+            }}>
+              {displayCategories.map((c, idx) => {
+                const IconComp = getCategoryIconComponent(c.nom, c.iconType);
+                return (
+                  <div
+                    key={c.id || idx}
+                    onClick={() => navigate(`/catalogue?categoryId=${c.id}`)}
+                    style={{
+                      background: "#fff",
+                      border: "1px solid var(--line, #e2e8f0)",
+                      borderRadius: 16,
+                      padding: "20px 22px",
+                      cursor: "pointer",
+                      transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+                      boxShadow: "0 2px 6px rgba(0,0,0,0.02)",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "space-between"
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = "translateY(-3px)";
+                      e.currentTarget.style.boxShadow = "0 10px 24px rgba(0,0,0,0.06)";
+                      e.currentTarget.style.borderColor = "#FDBA74";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = "translateY(0)";
+                      e.currentTarget.style.boxShadow = "0 2px 6px rgba(0,0,0,0.02)";
+                      e.currentTarget.style.borderColor = "var(--line, #e2e8f0)";
+                    }}
+                  >
+                    <div>
+                      <div style={{
+                        width: 44, height: 44, borderRadius: 12,
+                        background: "#FFF7ED", color: "#EA580C",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        marginBottom: 14
+                      }}>
+                        <IconComp size={22} />
+                      </div>
+                      <div style={{ fontSize: 16, fontWeight: 800, color: "var(--ink)", lineHeight: 1.3 }}>
+                        {c.nom}
+                      </div>
+                      <div style={{ fontSize: 13, color: "var(--muted)", marginTop: 6, lineHeight: 1.45 }}>
+                        {getCategoryDesc(c.nom, c.description)}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* 3. NOS SERVICES BTP : 4 GRANDES CARTES IMMERSIVES (Fidèle à la maquette Comores Houla) */}
+      {(() => {
+        const defaultBtpServices = [
+          {
+            id: 1,
+            nom: "Maçonnerie & Gros Œuvre",
+            description: "Fondations, élévation de murs en parpaings, chaînages, dalles béton armé et coffrage professionnel pour villas aux Comores.",
+            tarif: "Sur devis gratuit",
+            conditions: "Intervention sur tout Ngazidja. Matériel et main d'œuvre qualifiée.",
+            chefNom: "Chef Maçon M. Bacar",
+            chefTelephone: boutique?.whatsappNumber || boutique?.telephone || "+269 333 00 00",
+            imageUrl: "https://images.unsplash.com/photo-1541888946425-d0fbb180c5f7?auto=format&fit=crop&w=800&q=80",
+            photosRealisation: [
+              "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=800&q=80"
+            ]
+          },
+          {
+            id: 2,
+            nom: "Électricité Bâtiment",
+            description: "Installation électrique complète conforme aux normes de sécurité : tableaux de distribution, câblage, disjoncteurs et éclairage.",
+            tarif: "Sur devis gratuit",
+            conditions: "Intervention rapide et matériel certifié.",
+            chefNom: "M. Ahmed (Électricien)",
+            chefTelephone: boutique?.whatsappNumber || boutique?.telephone || "+269 333 00 00",
+            imageUrl: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800&q=80",
+            photosRealisation: [
+              "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=800&q=80"
+            ]
+          },
+          {
+            id: 3,
+            nom: "Peinture & Finition",
+            description: "Peinture intérieure et extérieure, préparation des supports, enduits de lissage et revêtements anti-humidité tropicale.",
+            tarif: "Sur devis gratuit",
+            conditions: "Nettoyage de fin de chantier inclus.",
+            chefNom: "Responsable Peinture M. Soilihi",
+            chefTelephone: boutique?.whatsappNumber || boutique?.telephone || "+269 333 00 00",
+            imageUrl: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=800&q=80",
+            photosRealisation: [
+              "https://images.unsplash.com/photo-1562259949-e8e7689d7828?auto=format&fit=crop&w=800&q=80"
+            ]
+          },
+          {
+            id: 4,
+            nom: "Plomberie & Sanitaire",
+            description: "Réseaux d'eau potable, évacuations PVC, fosses septiques ventilées, sanitaires, surpresseurs et citernes.",
+            tarif: "Sur devis gratuit",
+            conditions: "Tests d'étanchéité et mise en eau systématiques.",
+            chefNom: "Chef Plombier M. Nassor",
+            chefTelephone: boutique?.whatsappNumber || boutique?.telephone || "+269 333 00 00",
+            imageUrl: "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=800&q=80",
+            photosRealisation: [
+              "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=800&q=80"
+            ]
+          }
+        ];
+
+        const displayServices = services && services.length > 0 ? services : defaultBtpServices;
+
+        return (
+          <div style={{ marginTop: 44, marginBottom: 44 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 12, marginBottom: 20 }}>
+              <div>
+                <h2 style={{ fontSize: "clamp(22px, 3.5vw, 28px)", fontWeight: 800, color: "var(--ink)", margin: 0 }}>
+                  Nos Services
+                </h2>
+                <p style={{ margin: "6px 0 0", color: "var(--muted)", fontSize: 14.5 }}>
+                  Réalisez vos travaux avec notre équipe d'experts BTP aux Comores !
+                </p>
+              </div>
+              <button 
+                onClick={() => navigate("/services")}
+                style={{
+                  background: "none", border: "none", color: "#2563EB",
+                  fontSize: 15, fontWeight: 700, cursor: "pointer",
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "4px 0"
+                }}
+              >
+                Voir tous les services →
+              </button>
+            </div>
+
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+              gap: 18
+            }}>
+              {displayServices.slice(0, 4).map((s) => (
+                <div
+                  key={s.id}
+                  onClick={() => setActiveServiceModal(s)}
+                  style={{
+                    position: "relative",
+                    height: 210,
+                    borderRadius: 16,
+                    overflow: "hidden",
+                    cursor: "pointer",
+                    boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
+                    transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-4px)";
+                    e.currentTarget.style.boxShadow = "0 14px 28px rgba(0,0,0,0.15)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = "0 4px 14px rgba(0,0,0,0.08)";
+                  }}
+                >
+                  <img
+                    src={s.imageUrl}
+                    alt={s.nom}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                  <div style={{
+                    position: "absolute",
+                    inset: 0,
+                    background: "linear-gradient(to top, rgba(15,23,42,0.85) 0%, rgba(15,23,42,0.3) 60%, transparent 100%)",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "flex-end",
+                    padding: "20px"
+                  }}>
+                    <div style={{ color: "#fff", fontSize: 19, fontWeight: 800, textShadow: "0 2px 6px rgba(0,0,0,0.4)" }}>
+                      {s.nom}
+                    </div>
+                    <div style={{ color: "rgba(255,255,255,0.85)", fontSize: 13, marginTop: 4, display: "flex", alignItems: "center", gap: 6 }}>
+                      <span>{s.tarif || "Sur devis gratuit"}</span>
+                      <span>·</span>
+                      <span style={{ textDecoration: "underline" }}>Détails & Photos →</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* 4. PRODUITS LES PLUS VENDUS (SUR 4 COLONNES DESKTOP) */}
+      {(() => {
+        const plusVendus = safeProducts.filter(p => p.isPlusVendu || (p.ventesCount && p.ventesCount > 0));
+        const toShow = plusVendus.length > 0 ? plusVendus.slice(0, 8) : safeProducts.slice(0, 4);
+
+        if (toShow.length === 0) return null;
+
+        return (
+          <div style={{ marginTop: 36, marginBottom: 36 }}>
+            <div className="bs-section-title" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+              <h2 style={{ margin: 0 }}>🔥 Les Plus Vendus</h2>
+              <button onClick={() => navigate("/catalogue")} style={{ background: "none", border: "none", color: "#2563EB", fontWeight: 700, cursor: "pointer", fontSize: 14 }}>
+                Voir tout le catalogue →
+              </button>
+            </div>
+            <div className="bs-grid-home">
+              {toShow.map((p) => <ProductCard key={p.id} product={p} />)}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* 5. PRODUITS RECOMMANDÉS (SUR 4 COLONNES DESKTOP) */}
+      {(() => {
+        const recommandes = safeProducts.filter(p => p.isRecommande);
+        const toShow = recommandes.length > 0 ? recommandes.slice(0, 8) : safeProducts.slice(4, 8);
+
+        if (toShow.length === 0) return null;
+
+        return (
+          <div style={{ marginTop: 36, marginBottom: 36 }}>
+            <div className="bs-section-title" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+              <h2 style={{ margin: 0 }}>⭐ Recommandés par nos Experts</h2>
+              <button onClick={() => navigate("/catalogue")} style={{ background: "none", border: "none", color: "#2563EB", fontWeight: 700, cursor: "pointer", fontSize: 14 }}>
+                Voir tout →
+              </button>
+            </div>
+            <div className="bs-grid-home">
+              {toShow.map((p) => <ProductCard key={p.id} product={p} />)}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* 6. NOUVEAUX ARRIVAGES MATÉRIAUX */}
       {safeProducts.length > 0 && (() => {
         const customNouveaux = safeProducts.filter(p => p.isNouveau || p.isNouveau === true || p.isNouveau === 1);
         const displayNouveaux = customNouveaux.length > 0 
@@ -613,7 +898,7 @@ export default function Home() {
 
         return (
           <CategoryScrollSection
-            category={{ id: "new", nom: "Nouveaux Arrivages" }}
+            category={{ id: "new", nom: "Nouveaux Arrivages Matériaux" }}
             products={displayNouveaux}
             onNavigate={() => navigate("/catalogue")}
           />
@@ -948,6 +1233,173 @@ export default function Home() {
               >
                 Fermer
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DÉTAILS SERVICE BTP & CONTACT CHEF D'ÉQUIPE */}
+      {activeServiceModal && (
+        <div 
+          className="bs-modal-overlay" 
+          onClick={() => setActiveServiceModal(null)}
+          style={{
+            position: "fixed", inset: 0, background: "rgba(15, 23, 42, 0.75)",
+            backdropFilter: "blur(6px)", zIndex: 9999,
+            display: "flex", alignItems: "center", justifyContent: "center", padding: 16
+          }}
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()} 
+            style={{
+              background: "#fff",
+              borderRadius: 24,
+              width: "100%",
+              maxWidth: 640,
+              maxHeight: "90vh",
+              overflowY: "auto",
+              boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)",
+              border: "1px solid var(--line)"
+            }}
+          >
+            {/* Header image du service */}
+            <div style={{ position: "relative", height: 220, overflow: "hidden", borderTopLeftRadius: 24, borderTopRightRadius: 24 }}>
+              <img 
+                src={activeServiceModal.imageUrl} 
+                alt={activeServiceModal.nom}
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(15,23,42,0.85), transparent 70%)" }} />
+              
+              <button
+                onClick={() => setActiveServiceModal(null)}
+                style={{
+                  position: "absolute", top: 16, right: 16,
+                  width: 36, height: 36, borderRadius: "50%",
+                  background: "rgba(0,0,0,0.5)", border: "none", color: "#fff",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  cursor: "pointer", backdropFilter: "blur(4px)"
+                }}
+              >
+                <X size={20} />
+              </button>
+
+              <div style={{ position: "absolute", bottom: 16, left: 20, right: 20 }}>
+                <span style={{
+                  background: "#EA580C", color: "#fff",
+                  padding: "3px 10px", borderRadius: 12,
+                  fontSize: 11, fontWeight: 800, textTransform: "uppercase"
+                }}>
+                  Service BTP
+                </span>
+                <h3 style={{ margin: "6px 0 0", color: "#fff", fontSize: 22, fontWeight: 900 }}>
+                  {activeServiceModal.nom}
+                </h3>
+              </div>
+            </div>
+
+            {/* Contenu */}
+            <div style={{ padding: "24px" }}>
+              {/* Tarif & Type */}
+              <div style={{
+                background: "#F8FAFC", border: "1px solid #E2E8F0",
+                borderRadius: 14, padding: "12px 18px",
+                display: "flex", justifyContent: "space-between", alignItems: "center",
+                marginBottom: 20
+              }}>
+                <div>
+                  <span style={{ fontSize: 12, color: "var(--muted)", textTransform: "uppercase", fontWeight: 700 }}>Tarification</span>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: "#0F766E", marginTop: 2 }}>
+                    {activeServiceModal.tarif || "Sur devis gratuit"}
+                  </div>
+                </div>
+                <span style={{ background: "#CCFBF1", color: "#0F766E", padding: "4px 10px", borderRadius: 12, fontSize: 12, fontWeight: 700 }}>
+                  {activeServiceModal.typeTarif === "journee" ? "Par journée" : activeServiceModal.typeTarif === "m2" ? "Au m²" : "Sur devis chantier"}
+                </span>
+              </div>
+
+              {/* Description */}
+              <div style={{ marginBottom: 20 }}>
+                <h4 style={{ fontSize: 14, fontWeight: 800, color: "var(--ink)", margin: "0 0 8px" }}>
+                  Ce que propose notre entreprise :
+                </h4>
+                <p style={{ margin: 0, fontSize: 14, color: "var(--muted)", lineHeight: 1.6 }}>
+                  {activeServiceModal.description || "Prestation de haute qualité réalisée par nos artisans BTP expérimentés."}
+                </p>
+              </div>
+
+              {/* Conditions */}
+              {activeServiceModal.conditions && (
+                <div style={{ marginBottom: 20, background: "#FEFCE8", border: "1px solid #FEF08A", borderRadius: 14, padding: "14px 16px" }}>
+                  <h4 style={{ fontSize: 13, fontWeight: 800, color: "#854D0E", margin: "0 0 6px" }}>
+                    Conditions d'intervention & Déplacements :
+                  </h4>
+                  <p style={{ margin: 0, fontSize: 13, color: "#713F12", lineHeight: 1.5 }}>
+                    {activeServiceModal.conditions}
+                  </p>
+                </div>
+              )}
+
+              {/* Responsable / Chef de chantier */}
+              {activeServiceModal.chefNom && (
+                <div style={{ marginBottom: 20, display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderRadius: 14, border: "1px solid var(--line)" }}>
+                  <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#EFF6FF", color: "#2563EB", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <HardHat size={22} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 700 }}>Responsable de l'équipe</div>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: "var(--ink)" }}>{activeServiceModal.chefNom}</div>
+                  </div>
+                </div>
+              )}
+
+              {/* Photos de Réalisations de ce service */}
+              {Array.isArray(activeServiceModal.photosRealisation) && activeServiceModal.photosRealisation.length > 0 && (
+                <div style={{ marginBottom: 24 }}>
+                  <h4 style={{ fontSize: 14, fontWeight: 800, color: "var(--ink)", margin: "0 0 10px" }}>
+                    Chantiers et projets déjà réalisés :
+                  </h4>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 10 }}>
+                    {activeServiceModal.photosRealisation.map((pUrl, pIdx) => (
+                      <div key={pIdx} style={{ height: 100, borderRadius: 10, overflow: "hidden", border: "1px solid var(--line)" }}>
+                        <img src={pUrl} alt={`Réalisation ${pIdx + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Bouton Contact WhatsApp Direct */}
+              {(() => {
+                const phone = (activeServiceModal.chefTelephone || boutique?.whatsappNumber || boutique?.telephone || "+269 333 00 00").replace(/[^0-9]/g, "");
+                const msg = `Bonjour,\n\nJe souhaite échanger à propos de votre service : *${activeServiceModal.nom}*.\nTarif indicatif : ${activeServiceModal.tarif || "Sur devis"}.\nPouvez-vous me renseigner sur vos disponibilités et organiser une visite de chantier ?`;
+                const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+
+                return (
+                  <a
+                    href={waUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 10,
+                      background: "#16A34A",
+                      color: "#fff",
+                      padding: "14px 20px",
+                      borderRadius: 14,
+                      fontWeight: 800,
+                      fontSize: 15,
+                      textDecoration: "none",
+                      boxShadow: "0 4px 12px rgba(22, 163, 74, 0.25)",
+                      transition: "background 0.2s"
+                    }}
+                  >
+                    <MessageCircle size={20} /> Échanger avec le responsable sur WhatsApp
+                  </a>
+                );
+              })()}
             </div>
           </div>
         </div>

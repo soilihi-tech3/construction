@@ -1,7 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const { Op } = require("sequelize");
-const { sequelize, Product, Category, Order, OrderItem, User, Boutique, Notification, Review, Famille, Fournisseur, UniteVente, Achat, Marque, Testimonial, Expense, Saving } = require("../models");
+const { sequelize, Product, Category, Order, OrderItem, User, Boutique, Notification, Review, Famille, Fournisseur, UniteVente, Achat, Marque, Testimonial, Expense, Saving, Service } = require("../models");
 const { authenticate, requireRole, requireOwnBoutique } = require("../middleware/auth");
 const { getCache, setCache, clearCachePattern } = require("../config/cache");
 const { broadcast } = require("../utils/broadcaster");
@@ -2728,6 +2728,195 @@ router.delete("/testimonials/:id", requireRole("admin", "employe"), async (req, 
     await testimonial.destroy();
     purgeCache();
     broadcast("boutique_updated", { boutiqueId: req.boutiqueId });
+  } catch (err) { next(err); }
+});
+
+/* ---------------------- SERVICES DE CONSTRUCTION & BTP ---------------------- */
+
+const DEFAULT_SERVICES = [
+  {
+    nom: "Maçonnerie & Gros Œuvre",
+    slug: "maconnerie-gros-oeuvre",
+    description: "Fondations, élévation de murs en parpaings, chaînages, dalles béton armé et coffrage professionnel pour villas, clôtures et bâtiments aux Comores.",
+    conditions: "Intervention sur tout Ngazidja (Moroni, Mboude, Bambao, Itsandra...). Équipe qualifiée avec chef de chantier dédié. Devis détaillé gratuit après visite du terrain.",
+    tarif: "Sur devis gratuit",
+    typeTarif: "devis",
+    chefNom: "Chef Maçon M. Bacar",
+    chefTelephone: "+269 333 00 00",
+    imageUrl: "https://images.unsplash.com/photo-1541888946425-d0fbb180c5f7?auto=format&fit=crop&w=800&q=80",
+    photosRealisation: [
+      "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80",
+      "https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=800&q=80"
+    ],
+    ordre: 1,
+    actif: true
+  },
+  {
+    nom: "Électricité Bâtiment",
+    slug: "electricite-batiment",
+    description: "Installation électrique complète conforme aux normes de sécurité : tableaux de distribution, câblage encastré, disjoncteurs, prises étanches, éclairage LED moderne et raccordement réseau.",
+    conditions: "Dépannage d'urgence et chantiers neufs. Garantie sur toutes les installations. Vérification de conformité avant mise sous tension.",
+    tarif: "Sur devis gratuit",
+    typeTarif: "devis",
+    chefNom: "M. Ahmed (Électricien Agréé)",
+    chefTelephone: "+269 333 00 00",
+    imageUrl: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800&q=80",
+    photosRealisation: [
+      "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=800&q=80"
+    ],
+    ordre: 2,
+    actif: true
+  },
+  {
+    nom: "Peinture & Finition",
+    slug: "peinture-finition",
+    description: "Peinture intérieure et extérieure, préparation soignée des supports, enduits de lissage, application anti-humidité tropicale et vernis haute résistance.",
+    conditions: "Fourniture possible des pots de peinture ou main d'œuvre seule. Protection intégrale des sols et nettoyage en fin de chantier.",
+    tarif: "Sur devis gratuit",
+    typeTarif: "devis",
+    chefNom: "Responsable Finitions M. Soilihi",
+    chefTelephone: "+269 333 00 00",
+    imageUrl: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=800&q=80",
+    photosRealisation: [
+      "https://images.unsplash.com/photo-1562259949-e8e7689d7828?auto=format&fit=crop&w=800&q=80"
+    ],
+    ordre: 3,
+    actif: true
+  },
+  {
+    nom: "Plomberie & Sanitaire",
+    slug: "plomberie-sanitaire",
+    description: "Réseaux d'alimentation eau potable, évacuations PVC anti-odeur, fosses septiques ventilées, pose de robinetterie, chauffe-eau solaires, surpresseurs et citernes.",
+    conditions: "Tests de pression et d'étanchéité systématiques. Disponibilité 7j/7 pour chantiers et rénovations.",
+    tarif: "Sur devis gratuit",
+    typeTarif: "devis",
+    chefNom: "Chef Plombier M. Nassor",
+    chefTelephone: "+269 333 00 00",
+    imageUrl: "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=800&q=80",
+    photosRealisation: [
+      "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=800&q=80"
+    ],
+    ordre: 4,
+    actif: true
+  },
+  {
+    nom: "Carrelage & Revêtements de Sol",
+    slug: "carrelage-revetements",
+    description: "Pose soignée de carrelage grès cérame grand format, faïence pour salles de bain et crédences de cuisine, terrasses extérieures antidérapantes et plinthes.",
+    conditions: "Nivellement parfait au laser, colles et joints haute adhérence hydrofuges.",
+    tarif: "Sur devis gratuit",
+    typeTarif: "devis",
+    chefNom: "M. Youssouf (Artisan Carreleur)",
+    chefTelephone: "+269 333 00 00",
+    imageUrl: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80",
+    photosRealisation: [],
+    ordre: 5,
+    actif: true
+  },
+  {
+    nom: "Architecture & Suivi de Chantier",
+    slug: "architecture-suivi-chantier",
+    description: "Plans architecturaux 2D/3D, dossiers de permis de construire, calculs de ferraillage, estimation quantitative précise des matériaux et suivi régulier sur chantier.",
+    conditions: "Conseils techniques d'ingénieurs qualifiés pour optimiser le budget et la solidité de votre maison.",
+    tarif: "Sur devis gratuit",
+    typeTarif: "devis",
+    chefNom: "Cabinet Technique BTP",
+    chefTelephone: "+269 333 00 00",
+    imageUrl: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=80",
+    photosRealisation: [],
+    ordre: 6,
+    actif: true
+  }
+];
+
+router.get("/services", requireRole("admin", "employe"), async (req, res, next) => {
+  try {
+    let list = await Service.findAll({
+      where: { boutiqueId: req.boutiqueId },
+      order: [["ordre", "ASC"], ["createdAt", "ASC"]]
+    });
+    if (list.length === 0) {
+      // Auto-création des services BTP par défaut pour la boutique
+      const toCreate = DEFAULT_SERVICES.map(s => ({ ...s, boutiqueId: req.boutiqueId }));
+      await Service.bulkCreate(toCreate);
+      list = await Service.findAll({
+        where: { boutiqueId: req.boutiqueId },
+        order: [["ordre", "ASC"], ["createdAt", "ASC"]]
+      });
+    }
+    res.json(list);
+  } catch (err) { next(err); }
+});
+
+router.post("/services", requireRole("admin", "employe"), async (req, res, next) => {
+  try {
+    const { nom, description, conditions, tarif, typeTarif, chefNom, chefTelephone, chefEmail, imageUrl, photosRealisation, ordre, actif } = req.body;
+    if (!nom || !nom.trim()) {
+      return res.status(400).json({ message: "Le nom du service est requis." });
+    }
+    const slug = nom.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    const service = await Service.create({
+      boutiqueId: req.boutiqueId,
+      nom: nom.trim(),
+      slug: slug || `service-${Date.now()}`,
+      description: description || null,
+      conditions: conditions || null,
+      tarif: tarif || "Sur devis gratuit",
+      typeTarif: typeTarif || "devis",
+      chefNom: chefNom || null,
+      chefTelephone: chefTelephone || null,
+      chefEmail: chefEmail || null,
+      imageUrl: imageUrl || null,
+      photosRealisation: Array.isArray(photosRealisation) ? photosRealisation : [],
+      ordre: Number(ordre) || 0,
+      actif: actif !== false
+    });
+    purgeCache();
+    broadcast("boutique_updated", { boutiqueId: req.boutiqueId });
+    res.status(201).json(service);
+  } catch (err) { next(err); }
+});
+
+router.put("/services/:id", requireRole("admin", "employe"), async (req, res, next) => {
+  try {
+    const service = await Service.findOne({
+      where: { id: req.params.id, boutiqueId: req.boutiqueId }
+    });
+    if (!service) return res.status(404).json({ message: "Service introuvable." });
+    await service.update(req.body);
+    purgeCache();
+    broadcast("boutique_updated", { boutiqueId: req.boutiqueId });
+    res.json(service);
+  } catch (err) { next(err); }
+});
+
+router.delete("/services/:id", requireRole("admin", "employe"), async (req, res, next) => {
+  try {
+    const service = await Service.findOne({
+      where: { id: req.params.id, boutiqueId: req.boutiqueId }
+    });
+    if (!service) return res.status(404).json({ message: "Service introuvable." });
+    await service.destroy();
+    purgeCache();
+    broadcast("boutique_updated", { boutiqueId: req.boutiqueId });
+    res.json({ message: "Service supprimé avec succès." });
+  } catch (err) { next(err); }
+});
+
+router.post("/services/reorder", requireRole("admin", "employe"), async (req, res, next) => {
+  try {
+    const { items } = req.body; // [{ id, ordre }]
+    if (Array.isArray(items)) {
+      for (const it of items) {
+        await Service.update(
+          { ordre: Number(it.ordre) || 0 },
+          { where: { id: it.id, boutiqueId: req.boutiqueId } }
+        );
+      }
+      purgeCache();
+      broadcast("boutique_updated", { boutiqueId: req.boutiqueId });
+    }
+    res.json({ message: "Ordre mis à jour." });
   } catch (err) { next(err); }
 });
 

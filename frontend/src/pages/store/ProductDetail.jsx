@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
-import { ArrowLeft, Tag, Star, ShoppingBag, CheckCircle, Heart, Minus, Plus, Search, AlertTriangle, ChevronLeft, ChevronRight, Smartphone, Check } from "lucide-react";
+import { ArrowLeft, Tag, Star, ShoppingBag, CheckCircle, Heart, Minus, Plus, Search, AlertTriangle, ChevronLeft, ChevronRight, Smartphone, Check, MessageCircle } from "lucide-react";
 import api, { SLUG } from "../../api";
 import Stars from "../../components/Stars.jsx";
 import ProductCard from "../../components/ProductCard.jsx";
@@ -10,7 +10,7 @@ import { subscribeRealtime } from "../../utils/realtime.js";
 import { Skel } from "../../components/Skeleton.jsx";
 import { readCache, writeCache } from "../../utils/swrCache.js";
 
-import { formatPrice as fcfa, getActiveCurrency } from "../../utils/currency.js";
+import { formatPrice as fcfa, getActiveCurrency, formatDualPrice } from "../../utils/currency.js";
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -527,6 +527,17 @@ export default function ProductDetail() {
     navigate("/catalogue");
   };
 
+  const { boutique } = useAuth();
+  function handleWhatsAppQuote() {
+    const storePhone = boutique?.whatsappNumber || boutique?.telephone || "+269 333 00 00";
+    const cleanPhone = storePhone.replace(/[^0-9]/g, "");
+    const { kmfStr, eurStr } = formatDualPrice(currentPrice, product.prixParDevise?.EUR);
+    const totalKmf = currentPrice * quantity;
+    const totalEur = Math.round((totalKmf / 491.96775) * 100) / 100;
+    const msg = `Bonjour ${boutique?.nom || "Ets BTP"},\n\nJe souhaite obtenir un devis pour votre article :\n*Article :* ${product.nom}\n*Quantité :* ${quantity} ${product.unite || "unité(s)"}\n*Prix unitaire :* ${kmfStr} (${eurStr})\n*Total estimé :* ${totalKmf.toLocaleString("fr-FR")} KMF (${totalEur.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €)\n\nMerci de me confirmer la disponibilité et la zone de livraison sur mon chantier aux Comores.`;
+    window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, "_blank");
+  }
+
   return (
     <div style={{ minHeight: "75vh" }}>
       <button className="bs-back" onClick={handleBack}>
@@ -595,7 +606,18 @@ export default function ProductDetail() {
                   const cStock = getVariantStock(c);
                   const isOutOfStock = cStock !== null && cStock <= 0;
 
-                  return (
+                  const { boutique } = useAuth();
+  function handleWhatsAppQuote() {
+    const storePhone = boutique?.whatsappNumber || boutique?.telephone || "+269 333 00 00";
+    const cleanPhone = storePhone.replace(/[^0-9]/g, "");
+    const { kmfStr, eurStr } = formatDualPrice(currentPrice, product.prixParDevise?.EUR);
+    const totalKmf = currentPrice * quantity;
+    const totalEur = Math.round((totalKmf / 491.96775) * 100) / 100;
+    const msg = `Bonjour ${boutique?.nom || "Ets BTP"},\n\nJe souhaite obtenir un devis pour votre article :\n*Article :* ${product.nom}\n*Quantité :* ${quantity} ${product.unite || "unité(s)"}\n*Prix unitaire :* ${kmfStr} (${eurStr})\n*Total estimé :* ${totalKmf.toLocaleString("fr-FR")} KMF (${totalEur.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €)\n\nMerci de me confirmer la disponibilité et la zone de livraison sur mon chantier aux Comores.`;
+    window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, "_blank");
+  }
+
+  return (
                     <button
                       key={idx}
                       type="button"
@@ -694,7 +716,18 @@ export default function ProductDetail() {
                   const sStock = getVariantStock(s);
                   const isOutOfStock = sStock !== null && sStock <= 0;
 
-                  return (
+                  const { boutique } = useAuth();
+  function handleWhatsAppQuote() {
+    const storePhone = boutique?.whatsappNumber || boutique?.telephone || "+269 333 00 00";
+    const cleanPhone = storePhone.replace(/[^0-9]/g, "");
+    const { kmfStr, eurStr } = formatDualPrice(currentPrice, product.prixParDevise?.EUR);
+    const totalKmf = currentPrice * quantity;
+    const totalEur = Math.round((totalKmf / 491.96775) * 100) / 100;
+    const msg = `Bonjour ${boutique?.nom || "Ets BTP"},\n\nJe souhaite obtenir un devis pour votre article :\n*Article :* ${product.nom}\n*Quantité :* ${quantity} ${product.unite || "unité(s)"}\n*Prix unitaire :* ${kmfStr} (${eurStr})\n*Total estimé :* ${totalKmf.toLocaleString("fr-FR")} KMF (${totalEur.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €)\n\nMerci de me confirmer la disponibilité et la zone de livraison sur mon chantier aux Comores.`;
+    window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, "_blank");
+  }
+
+  return (
                     <button
                       key={idx}
                       type="button"
@@ -885,28 +918,105 @@ export default function ProductDetail() {
             </div>
           )}
 
-          {/* PRIX DYNAMIQUE */}
-          <div className="bs-price-row" style={{ fontSize: 24, marginBottom: 18 }}>
-            {promoBase && !isCustomVariantPrice ? (
-              <>
-                <span className="bs-price barre" style={{ fontSize: 20, color: "var(--muted)", textDecoration: "line-through" }}>
-                  {fcfa(regularBase, activeCurrency)}
-                </span>
-                <span className="bs-price" style={{ fontSize: 32, color: "#B4483A", fontWeight: 900 }}>
-                  {fcfa(currentPrice, activeCurrency)}
-                </span>
-              </>
+          {/* BADGES BTP : SUR COMMANDE, PLUS VENDU, RECOMMANDÉ */}
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 14, flexWrap: "wrap" }}>
+            {product.disponibilite === "sur_commande" ? (
+              <span style={{
+                background: "#E0F2FE", color: "#0284C7",
+                border: "1px solid #BAE6FD",
+                padding: "4px 12px", borderRadius: 16,
+                fontWeight: 800, fontSize: 12.5
+              }}>
+                Sur commande · Délai 1 à 2 semaines (Comores)
+              </span>
             ) : (
-              <span className="bs-price" style={{ fontSize: 32, fontWeight: 900, color: "var(--forest-dark)" }}>
-                {fcfa(currentPrice, activeCurrency)}
+              <span style={{
+                background: "#DCFCE7", color: "#15803D",
+                border: "1px solid #BBF7D0",
+                padding: "4px 12px", borderRadius: 16,
+                fontWeight: 800, fontSize: 12.5
+              }}>
+                En stock dépôt
               </span>
             )}
-            {product.unite && (
-              <span style={{ color: "var(--muted)", fontSize: 15, fontWeight: 600 }}>
-                / {product.unite}
+            {product.isPlusVendu && (
+              <span style={{
+                background: "#FFEDD5", color: "#C2410C",
+                border: "1px solid #FED7AA",
+                padding: "4px 12px", borderRadius: 16,
+                fontWeight: 800, fontSize: 12.5
+              }}>
+                Plus vendu
+              </span>
+            )}
+            {product.isRecommande && (
+              <span style={{
+                background: "#ECFDF5", color: "#047857",
+                border: "1px solid #A7F3D0",
+                padding: "4px 12px", borderRadius: 16,
+                fontWeight: 800, fontSize: 12.5
+              }}>
+                Recommandé
               </span>
             )}
           </div>
+
+          {/* SPÉCIFICATIONS BTP (Volume, Livraison) - Conforme à la maquette Ets Lihoma */}
+          <div style={{
+            background: "var(--card, #fff)",
+            border: "1px solid var(--line, #e2e8f0)",
+            borderRadius: 14,
+            padding: "14px 18px",
+            marginBottom: 20
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: 10, borderBottom: "1px solid var(--line, #e2e8f0)", fontSize: 14 }}>
+              <span style={{ color: "var(--muted, #64748b)" }}>Volume / Spécification</span>
+              <strong style={{ color: "var(--ink, #0f172a)" }}>{product.volume || (product.poids ? `${product.poids} kg` : (product.unite || "Standard BTP"))}</strong>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 10, fontSize: 14 }}>
+              <span style={{ color: "var(--muted, #64748b)" }}>Livraison sur chantier</span>
+              <strong style={{ color: "#16A34A" }}>Incluse aux Comores</strong>
+            </div>
+          </div>
+
+          {/* PRIX DYNAMIQUE BTP : KMF EN HAUT, EURO (€) EN BAS */}
+          {(() => {
+            const { kmfStr, eurStr } = formatDualPrice(currentPrice, product.prixParDevise?.EUR);
+            const totalKmf = currentPrice * quantity;
+            const totalEur = Math.round((totalKmf / 491.96775) * 100) / 100;
+            const unitSuffix = product.unite ? ` / ${product.unite}` : "";
+            const indicatifSuffix = product.isPrixFixe === false ? " (indicatif)" : "";
+
+            return (
+              <div style={{ marginBottom: 20, background: "rgba(15, 23, 42, 0.02)", padding: "16px 20px", borderRadius: 14, border: "1px solid var(--line)" }}>
+                <div style={{ display: "flex", alignItems: "baseline", flexWrap: "wrap", gap: 8 }}>
+                  <span style={{ fontSize: "clamp(26px, 4vw, 34px)", fontWeight: 900, color: "var(--forest-dark, #0f172a)" }}>
+                    {kmfStr}
+                  </span>
+                  <span style={{ fontSize: 15, color: "var(--muted, #64748b)", fontWeight: 700 }}>
+                    {unitSuffix} {indicatifSuffix}
+                  </span>
+                  {promoBase && !isCustomVariantPrice && (
+                    <span style={{ fontSize: 18, color: "#94A3B8", textDecoration: "line-through", marginLeft: 8 }}>
+                      {formatDualPrice(regularBase).kmfStr}
+                    </span>
+                  )}
+                </div>
+                <div style={{ fontSize: 16, color: "#475569", fontWeight: 700, marginTop: 4 }}>
+                  {eurStr}
+                </div>
+                <div style={{ marginTop: 12, paddingTop: 10, borderTop: "1px dashed var(--line)", fontSize: 14, fontWeight: 700, color: "var(--ink)" }}>
+                  Total estimé ({quantity} {product.unite || "unité(s)"}) :{" "}
+                  <span style={{ color: "#0F766E", fontSize: 16, fontWeight: 900 }}>
+                    {totalKmf.toLocaleString("fr-FR")} KMF
+                  </span>{" "}
+                  <span style={{ color: "#64748B", fontSize: 14 }}>
+                    ({totalEur.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €)
+                  </span>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* ── SELECTEUR DE MODÈLES DE TÉLÉPHONES (STYLE SHEIN / ALIEXPRESS) ── */}
           {modelesList.length > 0 && (
@@ -999,7 +1109,18 @@ export default function ProductDetail() {
                   const mStock = getVariantStock(m);
                   const isOutOfStock = mStock !== null && mStock <= 0;
 
-                  return (
+                  const { boutique } = useAuth();
+  function handleWhatsAppQuote() {
+    const storePhone = boutique?.whatsappNumber || boutique?.telephone || "+269 333 00 00";
+    const cleanPhone = storePhone.replace(/[^0-9]/g, "");
+    const { kmfStr, eurStr } = formatDualPrice(currentPrice, product.prixParDevise?.EUR);
+    const totalKmf = currentPrice * quantity;
+    const totalEur = Math.round((totalKmf / 491.96775) * 100) / 100;
+    const msg = `Bonjour ${boutique?.nom || "Ets BTP"},\n\nJe souhaite obtenir un devis pour votre article :\n*Article :* ${product.nom}\n*Quantité :* ${quantity} ${product.unite || "unité(s)"}\n*Prix unitaire :* ${kmfStr} (${eurStr})\n*Total estimé :* ${totalKmf.toLocaleString("fr-FR")} KMF (${totalEur.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €)\n\nMerci de me confirmer la disponibilité et la zone de livraison sur mon chantier aux Comores.`;
+    window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, "_blank");
+  }
+
+  return (
                     <button
                       key={idx}
                       type="button"
@@ -1163,6 +1284,38 @@ export default function ProductDetail() {
               )}
             </button>
           </div>
+
+          {/* BOUTON DEVIS WHATSAPP DIRECT (Conforme maquette Ets Lihoma) */}
+          <button
+            type="button"
+            onClick={handleWhatsAppQuote}
+            style={{
+              width: "100%",
+              height: 48,
+              borderRadius: 14,
+              border: "1.5px solid #22C55E",
+              background: "#F0FDF4",
+              color: "#15803D",
+              fontWeight: 800,
+              fontSize: 15,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 10,
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              boxShadow: "0 2px 8px rgba(34, 197, 94, 0.12)",
+              marginTop: -20,
+              marginBottom: 10
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = "#DCFCE7"}
+            onMouseLeave={(e) => e.currentTarget.style.background = "#F0FDF4"}
+          >
+            <MessageCircle size={20} color="#16A34A" /> Demander un devis via WhatsApp
+          </button>
+          <p style={{ fontSize: 12, color: "var(--muted)", textAlign: "center", margin: "4px 0 32px" }}>
+            Matériau livré sur demande — prix final, quantité et zone de livraison confirmés avec notre équipe aux Comores.
+          </p>
 
           {/* AVIS CLIENTS */}
           <div className="bs-reviews">

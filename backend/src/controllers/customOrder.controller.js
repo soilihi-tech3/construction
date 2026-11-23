@@ -25,21 +25,26 @@ async function createCustomRequest(req, res) {
       telephoneClient,
       emailClient,
       modeleAppareil,
+      typeProjet,
+      zoneLivraison,
+      delai,
       articles,
       description,
       photoUrl,
       photos
     } = req.body;
 
-    if (!nomClient || !telephoneClient || !modeleAppareil) {
+    if (!nomClient || !telephoneClient) {
       return res.status(400).json({ 
-        message: "Veuillez renseigner votre nom, numéro de téléphone et le modèle d'appareil." 
+        message: "Veuillez renseigner votre nom et numéro de téléphone." 
       });
     }
 
+    const projetNom = (typeProjet || modeleAppareil || "Matériaux de construction").trim();
+
     const parsedArticles = Array.isArray(articles) && articles.length > 0
       ? articles.filter(a => a && a.nom && a.nom.trim().length > 0)
-      : [{ nom: "Accessoire demandé", quantite: 1 }];
+      : [{ nom: "Matériaux demandés", quantite: 1 }];
 
     let finalPhotoUrl = null;
     if (Array.isArray(photos) && photos.length > 0) {
@@ -58,7 +63,10 @@ async function createCustomRequest(req, res) {
       nomClient: nomClient.trim(),
       telephoneClient: telephoneClient.trim(),
       emailClient: emailClient ? emailClient.trim() : null,
-      modeleAppareil: modeleAppareil.trim(),
+      modeleAppareil: projetNom,
+      typeProjet: typeProjet ? typeProjet.trim() : null,
+      zoneLivraison: zoneLivraison ? zoneLivraison.trim() : "Comores",
+      delai: delai || "1 à 2 semaines (Comores)",
       articles: parsedArticles,
       description: description ? description.trim() : null,
       photoUrl: finalPhotoUrl,

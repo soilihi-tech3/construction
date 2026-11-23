@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Store, ShieldCheck, Truck, Sparkles, Phone, MapPin, Mail, ArrowRight, Award, Check, Package, Shield, HeartHandshake } from "lucide-react";
+import { Store, ShieldCheck, Truck, Sparkles, Phone, MapPin, Mail, ArrowRight, Award, Check, Package, Shield, HeartHandshake, HardHat, Building, Layers, CheckCircle2 } from "lucide-react";
 import api, { SLUG } from "../../api";
 
 function CountUp({ end, duration = 2000 }) {
@@ -33,43 +33,48 @@ function CountUp({ end, duration = 2000 }) {
 export default function About() {
   const [boutique, setBoutique] = useState(null);
   const [isZoomed, setIsZoomed] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
 
   useEffect(() => {
     api.get(`/store/${SLUG}`).then(res => setBoutique(res.data)).catch(() => {});
   }, []);
 
-  // Détection dynamique de l'image de bannière hero depuis les données de la boutique
-  const dynamicHeroBanner = (() => {
-    if (boutique?.aProposBannerUrl) return boutique.aProposBannerUrl;
-    if (boutique?.bannerSlides) {
-      let slides = boutique.bannerSlides;
-      if (typeof slides === "string") {
-        try { slides = JSON.parse(slides); } catch (e) { slides = []; }
-      }
-      if (Array.isArray(slides) && slides.length > 0 && slides[0]?.imageUrl) {
-        return slides[0].imageUrl;
-      }
-    }
-    return "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=1600&q=80";
-  })();
+  const dynamicHeroBanner = boutique?.aProposBannerUrl || "https://images.unsplash.com/photo-1541888946425-d0fbb180c5f7?auto=format&fit=crop&w=1600&q=80";
+  const dynamicAboutImage = boutique?.aProposImageUrl || "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80";
 
-  // Image dynamique de présentation
-  const dynamicAboutImage = (() => {
-    if (boutique?.aProposImageUrl) return boutique.aProposImageUrl;
-    if (boutique?.bannerSlides) {
-      let slides = boutique.bannerSlides;
-      if (typeof slides === "string") {
-        try { slides = JSON.parse(slides); } catch (e) { slides = []; }
-      }
-      if (Array.isArray(slides) && slides.length > 1 && slides[1]?.imageUrl) {
-        return slides[1].imageUrl;
-      }
+  const PROJETS_REALISES = [
+    {
+      titre: "Villa contemporaine à Moroni",
+      type: "Gros œuvre & Maçonnerie",
+      lieu: "Moroni, Ngazidja",
+      img: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80",
+      description: "Fondations, élévation des murs et coulage de dalle béton armé avec fer à béton HA 12."
+    },
+    {
+      titre: "Coulage de dalle & ferraillage",
+      type: "Béton armé & Fondations",
+      lieu: "Région de Mboude",
+      img: "https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=800&q=80",
+      description: "Livraison de 4 camions de gravier 8m³ et 120 sacs de ciment Portland pour dalle supérieure."
+    },
+    {
+      titre: "Rénovation & Peinture de façade",
+      type: "Finition & Peinture",
+      lieu: "Itsandra, Comores",
+      img: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=800&q=80",
+      description: "Traitement anti-humidité tropicale, enduit de lissage et peinture mate haute résistance."
+    },
+    {
+      titre: "Installation électrique complète",
+      type: "Électricité Bâtiment",
+      lieu: "Bambao, Ngazidja",
+      img: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800&q=80",
+      description: "Tableau divisionnaire, câblage sécurisé et mise aux normes pour résidence privée."
     }
-    return boutique?.logoUrl || "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=800&q=80";
-  })();
+  ];
 
   return (
-    <div style={{ paddingBottom: 60 }}>
+    <div style={{ paddingBottom: 60, maxWidth: 1200, margin: "0 auto" }}>
       <style>{`
         .modern-service-card {
           background: var(--card, #fff);
@@ -86,21 +91,15 @@ export default function About() {
           transform: translateY(-5px);
           box-shadow: 0 12px 24px rgba(0,0,0,0.08);
         }
-        .services-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-          gap: 24px;
-          margin-bottom: 40px;
-        }
       `}</style>
 
-      {/* BANNIÈRE HÉRO À PROPOS DYNAMIQUE */}
+      {/* BANNIÈRE HÉRO À PROPOS */}
       <div className="bs-about-hero" style={{
         position: "relative",
         borderRadius: 20,
         overflow: "hidden",
-        minHeight: 240,
-        margin: "16px 0 32px",
+        minHeight: 260,
+        margin: "16px 0 36px",
         backgroundImage: `url('${dynamicHeroBanner}')`,
         backgroundSize: "cover",
         backgroundPosition: "center",
@@ -110,98 +109,98 @@ export default function About() {
         color: "#fff",
         textAlign: "center",
         boxShadow: "0 10px 30px rgba(0,0,0,0.12)",
-        padding: "36px 16px"
+        padding: "44px 20px"
       }}>
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(15,23,42,0.75), rgba(15,23,42,0.9))" }}></div>
-        <div style={{ position: "relative", zIndex: 2, maxWidth: 720 }}>
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(15,23,42,0.8), rgba(15,23,42,0.92))" }}></div>
+        <div style={{ position: "relative", zIndex: 2, maxWidth: 760 }}>
           <div style={{
             display: "inline-flex", alignItems: "center", gap: 8,
             background: "rgba(255,255,255,0.15)", backdropFilter: "blur(6px)",
             padding: "6px 16px", borderRadius: 20, fontSize: 12, fontWeight: 700,
-            textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 12
+            textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 14
           }}>
-            <Sparkles size={15} color="#F472B6" /> Notre Histoire & Engagement
+            <HardHat size={15} color="#FDBA74" /> Notre Histoire & Engagement BTP
           </div>
-          <h1 style={{ fontSize: "clamp(24px, 5vw, 36px)", fontWeight: 900, margin: 0, letterSpacing: "-0.5px" }}>
-            À propos de {boutique?.nom || "Soilihitech"}
+          <h1 style={{ fontSize: "clamp(26px, 5vw, 38px)", fontWeight: 900, margin: 0, letterSpacing: "-0.5px" }}>
+            À propos de {boutique?.nom || "ETS LIHOMA Matériaux BTP"}
           </h1>
-          <p style={{ fontSize: "clamp(13.5px, 3.5vw, 16px)", marginTop: 10, opacity: 0.95, lineHeight: 1.6 }}>
-            Votre référence exclusive en accessoires téléphoniques : chargeurs rapides GaN, glaces 9D, coques antichoc, câbles et écouteurs sans fil.
+          <p style={{ fontSize: "clamp(14px, 3.5vw, 16.5px)", marginTop: 12, opacity: 0.95, lineHeight: 1.6 }}>
+            Votre partenaire de référence aux Comores pour tous vos approvisionnements en matériaux de construction et réalisations de travaux de bâtiment.
           </p>
         </div>
       </div>
 
       {/* BLOC PRÉSENTATION ET VALEURS */}
-      <div className="bs-about-grid" style={{ marginBottom: 40 }}>
+      <div className="bs-about-grid" style={{ marginBottom: 48 }}>
         <div>
-          <h2 style={{ fontSize: "clamp(20px, 4vw, 26px)", fontWeight: 800, color: "var(--forest-dark)", marginBottom: 14 }}>
+          <h2 style={{ fontSize: "clamp(22px, 4vw, 28px)", fontWeight: 800, color: "var(--ink)", marginBottom: 14 }}>
             Qui sommes-nous ?
           </h2>
-          <p style={{ fontSize: 14.5, lineHeight: 1.75, color: "var(--ink)", marginBottom: 20 }}>
+          <p style={{ fontSize: 15, lineHeight: 1.8, color: "var(--ink)", marginBottom: 20 }}>
             {boutique?.aProposText || 
-              "Bienvenue chez Soilihitech. Nous sélectionnons avec exigence le meilleur des accessoires pour vos smartphones : blocs de charge rapide de 20W à 65W GaN, câbles certifiés Type-C et Lightning, protections écran 9D et antiespion, pochettes silicone et écouteurs sans fil haute performance. Tous nos articles sont testés, garantis neufs et compatibles avec les marques leaders : Apple, Samsung, Tecno, Infinix, Xiaomi, Oraimo et Anker."
+              "Implantée au cœur des Comores (Mboude & Ngazidja), notre entreprise est spécialisée dans la vente et la livraison directe sur chantier de matériaux de construction de première qualité : sable concassé, gravier par voyage de 8 m³, ciment Portland certifié, fer à béton de tous diamètres (fer de 8, 10, 12, 14, 16), bois et contreplaqué de coffrage, outillage et peintures de finition. Nous mettons également à votre disposition des équipes d'artisans maçons, plombiers, électriciens et peintres chevronnés pour concrétiser vos projets de construction de A à Z avec rigueur et ponctualité."
             }
           </p>
           
-          <div style={{ marginTop: 30, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+          <div style={{ marginTop: 32, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 20 }}>
             {/* Card 1 */}
-            <div className="modern-service-card" style={{ padding: 24 }}>
+            <div className="modern-service-card">
               <div style={{ display: "flex", alignItems: "center", gap: 10, color: "var(--forest-dark)", fontWeight: 800, marginBottom: 8, fontSize: 15 }}>
-                <ShieldCheck size={20} color="var(--forest)" /> 100% Authentique & Testé
+                <ShieldCheck size={20} color="#16A34A" /> Matériaux Certifiés BTP
               </div>
               <p style={{ margin: 0, fontSize: 13, color: "var(--muted)", lineHeight: 1.5 }}>
-                Tous nos accessoires électroniques sont testés avant expédition pour garantir sécurité et longévité.
+                Ciments haute résistance et fers à béton testés pour garantir la solidité pérenne de vos bâtisses.
               </p>
             </div>
 
             {/* Card 2 */}
-            <div className="modern-service-card" style={{ padding: 24 }}>
+            <div className="modern-service-card">
               <div style={{ display: "flex", alignItems: "center", gap: 10, color: "var(--forest-dark)", fontWeight: 800, marginBottom: 8, fontSize: 15 }}>
-                <Truck size={20} color="var(--forest)" /> Livraison Express
+                <Truck size={20} color="#2563EB" /> Livraison Camion sur Chantier
               </div>
               <p style={{ margin: 0, fontSize: 13, color: "var(--muted)", lineHeight: 1.5 }}>
-                Livraison soignée et rapide directement chez vous ou en point relais.
+                Flotte de camions bennes pour acheminer vos voyages de 8 m³ de sable et gravier partout sur l'île.
               </p>
             </div>
 
             {/* Card 3 */}
-            <div className="modern-service-card" style={{ padding: 24 }}>
+            <div className="modern-service-card">
               <div style={{ display: "flex", alignItems: "center", gap: 10, color: "var(--forest-dark)", fontWeight: 800, marginBottom: 8, fontSize: 15 }}>
-                <Package size={20} color="var(--accent)" /> Suivi & Conseil WhatsApp
+                <HardHat size={20} color="#EA580C" /> Équipes & Artisans Qualifiés
               </div>
               <p style={{ margin: 0, fontSize: 13, color: "var(--muted)", lineHeight: 1.5 }}>
-                Assistance directe pour trouver la compatibilité exacte de votre téléphone.
+                Maçons, plombiers et électriciens supervisés par des chefs de chantiers expérimentés.
               </p>
             </div>
 
             {/* Card 4 */}
-            <div className="modern-service-card" style={{ padding: 24 }}>
+            <div className="modern-service-card">
               <div style={{ display: "flex", alignItems: "center", gap: 10, color: "var(--forest-dark)", fontWeight: 800, marginBottom: 8, fontSize: 15 }}>
-                <Shield size={20} color="#0284C7" /> Protection Renforcée
+                <Building size={20} color="#0F766E" /> Présence 100% Comores
               </div>
               <p style={{ margin: 0, fontSize: 13, color: "var(--muted)", lineHeight: 1.5 }}>
-                Glaces et coques anti-chocs conçues pour protéger votre écran contre les chutes sévères.
+                Dépôts de proximité à Mboude et Moroni pour une réactivité optimale et des prix transparents.
               </p>
             </div>
           </div>
 
-          {/* STATS SECTION */}
-          <div style={{ marginTop: 24, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 16 }}>
-            <div className="modern-service-card" style={{ padding: "16px 10px", alignItems: "center", textAlign: "center" }}>
-              <div style={{ fontSize: 22, fontWeight: 900, color: "var(--forest)", marginBottom: 4 }}><CountUp end={6759} />+</div>
-              <div style={{ fontSize: 12, color: "var(--forest-dark)", fontWeight: 700, lineHeight: 1.3 }}>Clients<br/>Satisfaits</div>
+          {/* STATS SECTION BTP */}
+          <div style={{ marginTop: 28, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: 16 }}>
+            <div className="modern-service-card" style={{ padding: "18px 12px", alignItems: "center", textAlign: "center" }}>
+              <div style={{ fontSize: 24, fontWeight: 900, color: "#16A34A", marginBottom: 4 }}><CountUp end={1450} />+</div>
+              <div style={{ fontSize: 12.5, color: "var(--ink)", fontWeight: 700, lineHeight: 1.3 }}>Chantiers<br/>Livrés</div>
             </div>
-            <div className="modern-service-card" style={{ padding: "16px 10px", alignItems: "center", textAlign: "center" }}>
-              <div style={{ fontSize: 22, fontWeight: 900, color: "var(--accent)", marginBottom: 4 }}><CountUp end={35009} />+</div>
-              <div style={{ fontSize: 12, color: "var(--forest-dark)", fontWeight: 700, lineHeight: 1.3 }}>Avis Positifs<br/>Vérifiés</div>
+            <div className="modern-service-card" style={{ padding: "18px 12px", alignItems: "center", textAlign: "center" }}>
+              <div style={{ fontSize: 24, fontWeight: 900, color: "#EA580C", marginBottom: 4 }}><CountUp end={28500} />+</div>
+              <div style={{ fontSize: 12.5, color: "var(--ink)", fontWeight: 700, lineHeight: 1.3 }}>Tonnes Ciment<br/>& Matériaux</div>
             </div>
-            <div className="modern-service-card" style={{ padding: "16px 10px", alignItems: "center", textAlign: "center" }}>
-              <div style={{ fontSize: 22, fontWeight: 900, color: "#0284C7", marginBottom: 4 }}><CountUp end={47995} />+</div>
-              <div style={{ fontSize: 12, color: "var(--forest-dark)", fontWeight: 700, lineHeight: 1.3 }}>Accessoires<br/>Livrés</div>
+            <div className="modern-service-card" style={{ padding: "18px 12px", alignItems: "center", textAlign: "center" }}>
+              <div style={{ fontSize: 24, fontWeight: 900, color: "#2563EB", marginBottom: 4 }}><CountUp end={5200} />+</div>
+              <div style={{ fontSize: 12.5, color: "var(--ink)", fontWeight: 700, lineHeight: 1.3 }}>Voyages Camion<br/>Sable & Gravier</div>
             </div>
-            <div className="modern-service-card" style={{ padding: "16px 10px", alignItems: "center", textAlign: "center" }}>
-              <div style={{ fontSize: 22, fontWeight: 900, color: "#2563EB", marginBottom: 4 }}><CountUp end={67595} />+</div>
-              <div style={{ fontSize: 12, color: "var(--forest-dark)", fontWeight: 700, lineHeight: 1.3 }}>Recharges &<br/>Glaces Expédiées</div>
+            <div className="modern-service-card" style={{ padding: "18px 12px", alignItems: "center", textAlign: "center" }}>
+              <div style={{ fontSize: 24, fontWeight: 900, color: "#0F766E", marginBottom: 4 }}><CountUp end={12} />+</div>
+              <div style={{ fontSize: 12.5, color: "var(--ink)", fontWeight: 700, lineHeight: 1.3 }}>Années<br/>d'Expérience BTP</div>
             </div>
           </div>
         </div>
@@ -210,86 +209,68 @@ export default function About() {
         <div style={{ position: "relative", marginTop: 12, display: "flex", justifyContent: "center" }}>
           <img 
             src={dynamicAboutImage} 
-            alt="À propos" 
-            onClick={() => setIsZoomed(true)}
+            alt="À propos des chantiers" 
             style={{ 
               width: "100%", 
-              maxWidth: 420,
-              height: 360, 
+              maxWidth: 440,
+              height: 380, 
               objectFit: "cover", 
-              borderRadius: 18, 
-              boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-              cursor: "zoom-in" 
-            }}
+              borderRadius: 20, 
+              boxShadow: "0 14px 28px rgba(0,0,0,0.12)",
+              border: "1px solid var(--line)"
+            }} 
           />
-          <div style={{
-            position: "absolute", bottom: -14, left: 14, right: 14,
-            background: "#fff", padding: "12px 16px", borderRadius: 14,
-            boxShadow: "0 6px 20px rgba(0,0,0,0.1)", border: "1px solid var(--line)",
-            display: "flex", alignItems: "center", gap: 12,
-            maxWidth: 392,
-            margin: "0 auto"
-          }}>
-            <div style={{ width: 38, height: 38, borderRadius: 10, background: "var(--forest-light)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <Award size={20} color="var(--forest-dark)" />
-            </div>
-            <div>
-              <div style={{ fontWeight: 800, fontSize: 13.5, color: "var(--forest-dark)" }}>Grandes Marques Officielles</div>
-              <div style={{ fontSize: 11.5, color: "var(--muted)" }}>Apple, Samsung, Tecno, Anker, Baseus...</div>
-            </div>
-          </div>
         </div>
       </div>
 
-      {/* SECTION ADRESSES & CONTACTS */}
-      <div style={{ background: "var(--paper)", padding: "24px 16px", borderRadius: 18, border: "1px solid var(--line)", marginTop: 24 }}>
-        <h3 style={{ fontSize: "clamp(18px, 4vw, 22px)", fontWeight: 800, color: "var(--forest-dark)", marginTop: 0, marginBottom: 20, textAlign: "center" }}>
-          Nos Coordonnées & Boutiques
-        </h3>
+      {/* GALERIE DES PROJETS ET CHANTIERS RÉALISÉS */}
+      <div style={{ marginTop: 40, borderTop: "1px solid var(--line)", paddingTop: 40 }}>
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <span style={{ color: "#EA580C", fontWeight: 800, fontSize: 13, textTransform: "uppercase", letterSpacing: 1 }}>
+            Réalisations aux Comores
+          </span>
+          <h2 style={{ fontSize: "clamp(22px, 4vw, 30px)", fontWeight: 900, color: "var(--ink)", margin: "8px 0 0" }}>
+            Quelques Projets Réalisés avec nos Matériaux
+          </h2>
+          <p style={{ color: "var(--muted)", fontSize: 15, maxWidth: 640, margin: "8px auto 0" }}>
+            Découvrez un aperçu des villas, fondations et travaux de construction approvisionnés et accompagnés par notre entreprise.
+          </p>
+        </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16 }}>
-          {/* NOS BOUTIQUES */}
-          <div style={{ background: "#fff", padding: 18, borderRadius: 14, border: "1px solid var(--line)" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--forest)", fontWeight: 800, fontSize: 14.5, marginBottom: 10 }}>
-              <MapPin size={18} /> Nos Adresses & Boutiques
-            </div>
-            <div style={{ fontSize: 13, color: "var(--ink)", fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
-              <MapPin size={14} color="var(--forest)" style={{ flexShrink: 0 }} /> {boutique?.adresse || "Moroni Centre, Grande Comore"}
-            </div>
-            {boutique?.adresse2 && (
-              <div style={{ fontSize: 13, color: "var(--ink)", fontWeight: 600, marginTop: 6, display: "flex", alignItems: "center", gap: 6 }}>
-                <MapPin size={14} color="var(--forest)" style={{ flexShrink: 0 }} /> {boutique.adresse2}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(270px, 1fr))", gap: 20 }}>
+          {PROJETS_REALISES.map((p, idx) => (
+            <div
+              key={idx}
+              style={{
+                background: "#fff",
+                border: "1px solid var(--line)",
+                borderRadius: 16,
+                overflow: "hidden",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+                transition: "transform 0.25s ease"
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-4px)"}
+              onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0)"}
+            >
+              <div style={{ height: 180, overflow: "hidden" }}>
+                <img src={p.img} alt={p.titre} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               </div>
-            )}
-          </div>
-
-          {/* NOUS CONTACTER */}
-          <div style={{ background: "#fff", padding: 18, borderRadius: 14, border: "1px solid var(--line)" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--forest)", fontWeight: 800, fontSize: 14.5, marginBottom: 10 }}>
-              <Phone size={18} /> Téléphones & Assistance WhatsApp
-            </div>
-            <div style={{ fontSize: 13, color: "var(--ink)", fontWeight: 600 }}>
-              {boutique?.telephone || "+269 332 00 00"}
-            </div>
-            {boutique?.telephone2 && (
-              <div style={{ fontSize: 13, color: "var(--ink)", fontWeight: 600, marginTop: 6 }}>
-                {boutique.telephone2}
+              <div style={{ padding: "16px 18px" }}>
+                <span style={{ fontSize: 11, fontWeight: 800, color: "#2563EB", textTransform: "uppercase" }}>
+                  {p.type}
+                </span>
+                <h3 style={{ fontSize: 16, fontWeight: 800, color: "var(--ink)", margin: "4px 0 6px" }}>
+                  {p.titre}
+                </h3>
+                <p style={{ fontSize: 13, color: "var(--muted)", margin: "0 0 10px", lineHeight: 1.45 }}>
+                  {p.description}
+                </p>
+                <div style={{ fontSize: 12, color: "#64748B", display: "flex", alignItems: "center", gap: 4 }}>
+                  <MapPin size={13} color="#EA580C" /> {p.lieu}
+                </div>
               </div>
-            )}
-          </div>
-
-          {/* HORAIRES */}
-          <div style={{ background: "#fff", padding: 18, borderRadius: 14, border: "1px solid var(--line)" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--forest)", fontWeight: 800, fontSize: 14.5, marginBottom: 10 }}>
-              <Store size={18} /> Service Client & Horaires
             </div>
-            <div style={{ fontSize: 13, color: "var(--ink)", fontWeight: 600 }}>
-              {boutique?.horaires || "Du Lundi au Samedi : 08h00 - 19h00"}
-            </div>
-            <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 4 }}>
-              Commandes en ligne 24h/24, 7j/7
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </div>

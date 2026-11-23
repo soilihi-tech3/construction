@@ -5,7 +5,7 @@ import Stars from "./Stars.jsx";
 import { useCart } from "../context/CartContext.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 
-import { formatPrice as fcfa, getActiveCurrency, getProductPrice } from "../utils/currency.js";
+import { formatPrice as fcfa, getActiveCurrency, getProductPrice, formatDualPrice } from "../utils/currency.js";
 
 export default function ProductCard({ product, isFavorisPage }) {
   const navigate = useNavigate();
@@ -131,31 +131,62 @@ export default function ProductCard({ product, isFavorisPage }) {
           <Heart size={18} color={isFavorite ? "#B4483A" : "var(--muted)"} fill={isFavorite ? "#B4483A" : "none"} />
         </button>
 
-        {/* BLUE DISCOUNT PERCENTAGE BADGE */}
-        {hasPromo ? (
-          <span style={{
-            position: "absolute", top: 12, left: 12,
-            background: "#0284C7", color: "#fff",
-            padding: "4px 10px", borderRadius: 16,
-            fontWeight: 800, fontSize: 12, zIndex: 10,
-            boxShadow: "0 2px 6px rgba(2,132,199,0.3)"
-          }}>
-            {promoPercent > 0 ? `-${promoPercent}%` : "PROMO"}
-          </span>
-        ) : product.isNouveau ? (
-          <span style={{
-            position: "absolute", top: 12, left: 12,
-            background: "#163424", color: "#fff",
-            padding: "4px 10px", borderRadius: 16,
-            fontWeight: 800, fontSize: 11.5, zIndex: 10,
-            boxShadow: "0 2px 6px rgba(22,52,36,0.35)"
-          }}>
-            NOUVEAU
-          </span>
-        ) : null}
+        {/* BADGES BTP : SUR COMMANDE, PLUS VENDU, RECOMMANDÉ, NOUVEAU, PROMO */}
+        <div style={{ position: "absolute", top: 10, left: 10, display: "flex", flexDirection: "column", gap: 5, zIndex: 10 }}>
+          {product.disponibilite === "sur_commande" && (
+            <span style={{
+              background: "#0284C7", color: "#fff",
+              padding: "4px 9px", borderRadius: 14,
+              fontWeight: 800, fontSize: 11,
+              boxShadow: "0 2px 6px rgba(2,132,199,0.3)"
+            }}>
+              Sur commande
+            </span>
+          )}
+          {product.isPlusVendu && (
+            <span style={{
+              background: "#EA580C", color: "#fff",
+              padding: "4px 9px", borderRadius: 14,
+              fontWeight: 800, fontSize: 11,
+              boxShadow: "0 2px 6px rgba(234,88,12,0.3)"
+            }}>
+              Plus vendu
+            </span>
+          )}
+          {product.isRecommande && (
+            <span style={{
+              background: "#16A34A", color: "#fff",
+              padding: "4px 9px", borderRadius: 14,
+              fontWeight: 800, fontSize: 11,
+              boxShadow: "0 2px 6px rgba(22,163,74,0.3)"
+            }}>
+              Recommandé
+            </span>
+          )}
+          {hasPromo && !product.isPlusVendu && !product.isRecommande && (
+            <span style={{
+              background: "#0284C7", color: "#fff",
+              padding: "4px 9px", borderRadius: 14,
+              fontWeight: 800, fontSize: 11,
+              boxShadow: "0 2px 6px rgba(2,132,199,0.3)"
+            }}>
+              {promoPercent > 0 ? `-${promoPercent}%` : "PROMO"}
+            </span>
+          )}
+          {product.isNouveau && !hasPromo && !product.isPlusVendu && (
+            <span style={{
+              background: "#163424", color: "#fff",
+              padding: "4px 9px", borderRadius: 14,
+              fontWeight: 800, fontSize: 11,
+              boxShadow: "0 2px 6px rgba(22,52,36,0.35)"
+            }}>
+              Nouveau
+            </span>
+          )}
+        </div>
 
         {/* OUT OF STOCK OR MAX IN CART BADGES */}
-        {isOutOfStock ? (
+        {isOutOfStock && product.disponibilite !== "sur_commande" ? (
           <span style={{
             position: "absolute", bottom: 12, left: 12,
             background: "#64748B", color: "#fff",
@@ -174,26 +205,51 @@ export default function ProductCard({ product, isFavorisPage }) {
           }}>
             <AlertTriangle size={12} /> Stock max en panier ({qtyInCart}/{product.stock})
           </span>
-        ) : product.stock <= product.seuilAlerte ? (
+        ) : product.stock <= product.seuilAlerte && product.stock > 0 ? (
           <span className="bs-stockflag">Stock limité ({product.stock})</span>
         ) : null}
       </div>
 
       <div className="bs-card-body">
-        <div className="nom" style={{ marginTop: 2 }}>{product.nom}</div>
+        <div className="nom" style={{ marginTop: 2, fontSize: 14, fontWeight: 700, lineHeight: 1.35 }}>{product.nom}</div>
+        
+        {/* Détail Volume / Spécification BTP si renseigné */}
+        {product.volume && (
+          <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 2 }}>
+            Volume : <strong style={{ color: "var(--ink)" }}>{product.volume}</strong>
+          </div>
+        )}
 
-        <div className="bs-price-row">
-          {hasPromo && promoPrice ? (
-            <>
-              <span className="bs-price" style={{ color: "var(--accent)", fontWeight: 800 }}>{fcfa(promoPrice, activeCurrency)}</span>
-              <span className="bs-price barre">{fcfa(regularPrice, activeCurrency)}</span>
-            </>
-          ) : (
-            <span className="bs-price">{fcfa(regularPrice, activeCurrency)}</span>
-          )}
-        </div>
+        {/* AFFICHAGE DU PRIX : KMF EN HAUT / GRAND, EURO (€) EN BAS */}
+        {(() => {
+          const currentPrice = hasPromo && promoPrice ? promoPrice : regularPrice;
+          const { kmfStr, eurStr } = formatDualPrice(currentPrice, product.prixParDevise?.EUR);
+          const unitSuffix = product.unite ? ` / ${product.unite}` : "";
+          const indicatifSuffix = product.isPrixFixe === false ? " (indicatif)" : "";
 
-        <div className="bs-rating">
+          return (
+            <div style={{ marginTop: 6 }}>
+              <div style={{ display: "flex", alignItems: "baseline", flexWrap: "wrap", gap: 6 }}>
+                <span className="bs-price" style={{ fontSize: "16px", fontWeight: 800, color: hasPromo ? "var(--accent)" : "var(--ink)" }}>
+                  {kmfStr}
+                </span>
+                <span style={{ fontSize: "12px", color: "var(--muted)", fontWeight: 600 }}>
+                  {unitSuffix}{indicatifSuffix}
+                </span>
+                {hasPromo && (
+                  <span className="bs-price barre" style={{ fontSize: "12px" }}>
+                    {formatDualPrice(regularPrice).kmfStr}
+                  </span>
+                )}
+              </div>
+              <div style={{ fontSize: "12.5px", color: "#64748B", fontWeight: 700, marginTop: 1 }}>
+                {eurStr}
+              </div>
+            </div>
+          );
+        })()}
+
+        <div className="bs-rating" style={{ marginTop: 6 }}>
           <Stars note={noteMoyenne} size={12} />
           <span>{noteMoyenne.toFixed(1)} ({product.avis?.length || 0})</span>
         </div>

@@ -1,6 +1,6 @@
 const express = require("express");
 const { Op } = require("sequelize");
-const { sequelize, Product, Category, Order, OrderItem, Review, User, Notification, Famille, RechargePlan, Marque, Testimonial, PhoneBrand, PhoneModel } = require("../models");
+const { sequelize, Product, Category, Order, OrderItem, Review, User, Notification, Famille, RechargePlan, Marque, Testimonial, PhoneBrand, PhoneModel, Service } = require("../models");
 const { authenticate, optionalAuthenticate, requireRole, loadBoutique } = require("../middleware/auth");
 const { cacheMiddleware, clearCachePattern } = require("../config/cache");
 const { sendOrderConfirmationEmail, sendOrderStatusEmail } = require("../services/email.service");
@@ -195,6 +195,125 @@ router.get("/:slug/testimonials", loadBoutique, cacheMiddleware(120), async (req
       order: [["ordre", "ASC"], ["createdAt", "DESC"]]
     });
     res.json(testimonials);
+  } catch (err) { next(err); }
+});
+
+// GET /api/store/:slug/services (cached 5 min)
+router.get("/:slug/services", loadBoutique, cacheMiddleware(300), async (req, res, next) => {
+  try {
+    let list = await Service.findAll({
+      where: { boutiqueId: req.boutique.id, actif: true },
+      order: [["ordre", "ASC"], ["createdAt", "ASC"]]
+    });
+    if (list.length === 0) {
+      const defaultBtpServices = [
+        {
+          boutiqueId: req.boutique.id,
+          nom: "Maçonnerie & Gros Œuvre",
+          slug: "maconnerie-gros-oeuvre",
+          description: "Fondations, élévation de murs en parpaings, chaînages, dalles béton armé et coffrage professionnel pour villas, clôtures et bâtiments aux Comores.",
+          conditions: "Intervention sur tout Ngazidja. Devis détaillé gratuit après visite du terrain.",
+          tarif: "Sur devis gratuit",
+          typeTarif: "devis",
+          chefNom: "Chef Maçon M. Bacar",
+          chefTelephone: req.boutique.whatsappNumber || req.boutique.telephone || "+269 333 00 00",
+          imageUrl: "https://images.unsplash.com/photo-1541888946425-d0fbb180c5f7?auto=format&fit=crop&w=800&q=80",
+          photosRealisation: [
+            "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1590381105924-c72589b9ef3f?auto=format&fit=crop&w=800&q=80"
+          ],
+          ordre: 1,
+          actif: true
+        },
+        {
+          boutiqueId: req.boutique.id,
+          nom: "Électricité Bâtiment",
+          slug: "electricite-batiment",
+          description: "Installation électrique complète conforme aux normes de sécurité : tableaux de distribution, câblage encastré, disjoncteurs, prises étanches et éclairage.",
+          conditions: "Dépannage et chantiers neufs. Vérification de conformité avant mise sous tension.",
+          tarif: "Sur devis gratuit",
+          typeTarif: "devis",
+          chefNom: "M. Ahmed (Électricien Agréé)",
+          chefTelephone: req.boutique.whatsappNumber || req.boutique.telephone || "+269 333 00 00",
+          imageUrl: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800&q=80",
+          photosRealisation: [
+            "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=800&q=80"
+          ],
+          ordre: 2,
+          actif: true
+        },
+        {
+          boutiqueId: req.boutique.id,
+          nom: "Peinture & Finition",
+          slug: "peinture-finition",
+          description: "Peinture intérieure et extérieure, préparation soignée des supports, enduits de lissage, application anti-humidité tropicale et vernis.",
+          conditions: "Protection intégrale des sols et nettoyage en fin de chantier.",
+          tarif: "Sur devis gratuit",
+          typeTarif: "devis",
+          chefNom: "Responsable Finitions M. Soilihi",
+          chefTelephone: req.boutique.whatsappNumber || req.boutique.telephone || "+269 333 00 00",
+          imageUrl: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=800&q=80",
+          photosRealisation: [
+            "https://images.unsplash.com/photo-1562259949-e8e7689d7828?auto=format&fit=crop&w=800&q=80"
+          ],
+          ordre: 3,
+          actif: true
+        },
+        {
+          boutiqueId: req.boutique.id,
+          nom: "Plomberie & Sanitaire",
+          slug: "plomberie-sanitaire",
+          description: "Réseaux d'alimentation eau potable, évacuations PVC, fosses septiques, robinetterie, chauffe-eau, surpresseurs et citernes.",
+          conditions: "Tests de pression et d'étanchéité systématiques. Chantiers neufs et dépannage.",
+          tarif: "Sur devis gratuit",
+          typeTarif: "devis",
+          chefNom: "Chef Plombier M. Nassor",
+          chefTelephone: req.boutique.whatsappNumber || req.boutique.telephone || "+269 333 00 00",
+          imageUrl: "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?auto=format&fit=crop&w=800&q=80",
+          photosRealisation: [
+            "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&fit=crop&w=800&q=80"
+          ],
+          ordre: 4,
+          actif: true
+        },
+        {
+          boutiqueId: req.boutique.id,
+          nom: "Carrelage & Revêtements de Sol",
+          slug: "carrelage-revetements",
+          description: "Pose de carrelage grès cérame grand format, faïence pour salles de bain, terrasses extérieures et plinthes.",
+          conditions: "Nivellement parfait au laser, colles et joints hydrofuges.",
+          tarif: "Sur devis gratuit",
+          typeTarif: "devis",
+          chefNom: "M. Youssouf (Carreleur)",
+          chefTelephone: req.boutique.whatsappNumber || req.boutique.telephone || "+269 333 00 00",
+          imageUrl: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80",
+          photosRealisation: [],
+          ordre: 5,
+          actif: true
+        },
+        {
+          boutiqueId: req.boutique.id,
+          nom: "Architecture & Suivi de Chantier",
+          slug: "architecture-suivi-chantier",
+          description: "Plans architecturaux 2D/3D, permis de construire, calculs de ferraillage, estimation quantitative des matériaux et suivi régulier sur chantier.",
+          conditions: "Conseils techniques d'ingénieurs qualifiés pour optimiser le budget et la solidité de votre villa.",
+          tarif: "Sur devis gratuit",
+          typeTarif: "devis",
+          chefNom: "Cabinet BTP Comores",
+          chefTelephone: req.boutique.whatsappNumber || req.boutique.telephone || "+269 333 00 00",
+          imageUrl: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=800&q=80",
+          photosRealisation: [],
+          ordre: 6,
+          actif: true
+        }
+      ];
+      await Service.bulkCreate(defaultBtpServices);
+      list = await Service.findAll({
+        where: { boutiqueId: req.boutique.id, actif: true },
+        order: [["ordre", "ASC"], ["createdAt", "ASC"]]
+      });
+    }
+    res.json(list);
   } catch (err) { next(err); }
 });
 

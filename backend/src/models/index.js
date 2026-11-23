@@ -128,9 +128,13 @@ Saving.belongsTo(Boutique, { foreignKey: "boutiqueId" });
 User.hasMany(Saving, { foreignKey: "creeParId", as: "savingsCrees" });
 Saving.belongsTo(User, { foreignKey: "creeParId", as: "creePar" });
 
+const Service = require("./Service");
+Boutique.hasMany(Service, { foreignKey: "boutiqueId", as: "services" });
+Service.belongsTo(Boutique, { foreignKey: "boutiqueId" });
+
 module.exports = { 
   sequelize, Boutique, User, Category, Product, Order, OrderItem, 
   Review, Notification, Famille, Fournisseur, UniteVente, Achat, Marque, EmailLog, RechargePlan,
-  Testimonial, CustomOrderRequest, PhoneBrand, PhoneModel, Expense, Saving
+  Testimonial, CustomOrderRequest, PhoneBrand, PhoneModel, Expense, Saving, Service
 };
 

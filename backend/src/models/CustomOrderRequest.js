@@ -29,7 +29,23 @@ const CustomOrderRequest = sequelize.define("CustomOrderRequest", {
   },
   modeleAppareil: {
     type: DataTypes.STRING(255),
-    allowNull: false
+    allowNull: true,
+    defaultValue: "Matériaux de construction"
+  },
+  typeProjet: {
+    type: DataTypes.STRING(150),
+    allowNull: true,
+    field: "type_projet"
+  },
+  zoneLivraison: {
+    type: DataTypes.STRING(150),
+    allowNull: true,
+    field: "zone_livraison"
+  },
+  delai: {
+    type: DataTypes.STRING(100),
+    allowNull: true,
+    defaultValue: "1 à 2 semaines (Comores)"
   },
   articles: {
     type: DataTypes.JSON,

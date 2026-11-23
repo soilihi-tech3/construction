@@ -36,6 +36,12 @@ const Product = sequelize.define("Product", {
   senteurs: { type: DataTypes.JSON, allowNull: true },
   typeVarianteNom: { type: DataTypes.STRING(50), defaultValue: "Senteur", field: "type_variante_nom" },
   modelesCompatibles: { type: DataTypes.JSON, allowNull: true, field: "modeles_compatibles" },
+  isPrixFixe: { type: DataTypes.BOOLEAN, defaultValue: true, field: "is_prix_fixe" },
+  disponibilite: { type: DataTypes.STRING(30), defaultValue: "en_stock" }, // 'en_stock' | 'sur_commande'
+  delaiCommande: { type: DataTypes.STRING(100), defaultValue: "1 à 2 semaines aux Comores", field: "delai_commande" },
+  volume: { type: DataTypes.STRING(50), allowNull: true }, // ex: "8 m³", "25 kg", "12 m"
+  isRecommande: { type: DataTypes.BOOLEAN, defaultValue: false, field: "is_recommande" },
+  isPlusVendu: { type: DataTypes.BOOLEAN, defaultValue: false, field: "is_plus_vendu" },
 }, { tableName: "products" });
 
 module.exports = Product;

@@ -1186,34 +1186,28 @@ html[data-theme="dark"] .bs-testimonial-card span[style*="color: var(--ink)"] {
   }
 }
 
-/* Catalogue : EXACTEMENT 5 PRODUITS PAR LIGNE sur grand écran */
+/* Catalogue : EXACTEMENT 4 PRODUITS PAR LIGNE sur grand écran pour visibilité propre et optimale */
 .bs-grid-catalogue {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 22px;
 }
-@media (max-width: 1400px) {
-  .bs-grid-catalogue {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 16px;
-  }
-}
-@media (max-width: 1080px) {
+@media (max-width: 1200px) {
   .bs-grid-catalogue {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 14px;
+    gap: 18px;
   }
 }
-@media (max-width: 768px) {
+@media (max-width: 860px) {
   .bs-grid-catalogue {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
+    gap: 14px;
   }
 }
 @media (max-width: 480px) {
   .bs-grid-catalogue {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
+    gap: 10px;
   }
 }
 
@@ -3938,3 +3932,27 @@ html[data-theme="dark"] .bs-wa-label strong {
 
 
 
+
+/* STYLES D'IMPRESSION HAUTE DÉFINITION FACTURE CORPORATE A4 */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .corporate-invoice-sheet, .corporate-invoice-sheet * {
+    visibility: visible;
+  }
+  .corporate-invoice-sheet {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

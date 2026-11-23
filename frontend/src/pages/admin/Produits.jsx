@@ -86,11 +86,17 @@ export default function AdminProduits() {
     nom: "",
     boutiqueId: activeBoutiqueId || boutique?.id || "",
     categoryId: "",
-    famille: "Chargeurs & Blocs Rapides",
+    famille: "Matériaux BTP & Construction",
     marqueId: "",
     genre: "mixte",
     etat: "neuf",
     description: "",
+    volume: "",
+    isPrixFixe: true,
+    disponibilite: "en_stock",
+    delaiCommande: "1 à 2 semaines",
+    isPlusVendu: false,
+    isRecommande: false,
     prix: "",
     prixPromo: "",
     prixSenegal: "",
@@ -99,7 +105,7 @@ export default function AdminProduits() {
     prixPromoParDevise: {},
     enPromo: false,
     isNouveau: true,
-    masquerSurSite: true, // Coché par défaut à l'ajout pour préparer le stock avant affichage sur le site
+    masquerSurSite: false,
     noteEtoiles: "5",
     poids: "",
     unite: "pièce",
@@ -272,11 +278,17 @@ export default function AdminProduits() {
       nom: product.nom || "",
       boutiqueId: product.boutiqueId || activeBoutiqueId || boutique?.id || "",
       categoryId: product.categoryId || "",
-      famille: product.famille || "Cosmétique",
+      famille: product.famille || "Matériaux BTP & Construction",
       marqueId: product.marqueId || "",
-      genre: product.genre || "femme",
+      genre: product.genre || "mixte",
       etat: product.etat || "neuf",
       description: product.description || "",
+      volume: product.volume || "",
+      isPrixFixe: product.isPrixFixe !== undefined ? Boolean(product.isPrixFixe) : true,
+      disponibilite: product.disponibilite || "en_stock",
+      delaiCommande: product.delaiCommande || "1 à 2 semaines",
+      isPlusVendu: Boolean(product.isPlusVendu),
+      isRecommande: Boolean(product.isRecommande),
       prix: product.prix ?? "",
       prixPromo: product.prixPromo ?? "",
       prixSenegal: product.prixSenegal ?? "",
@@ -632,6 +644,12 @@ export default function AdminProduits() {
       prixPromoSenegal: resolvedPrixPromoSenegal,
       prixParDevise: cleanPrixParDevise,
       prixPromoParDevise: cleanPrixPromoParDevise,
+      volume: form.volume || "",
+      isPrixFixe: Boolean(form.isPrixFixe),
+      disponibilite: form.disponibilite || "en_stock",
+      delaiCommande: form.delaiCommande || "1 à 2 semaines",
+      isPlusVendu: Boolean(form.isPlusVendu),
+      isRecommande: Boolean(form.isRecommande),
       enPromo: Boolean(form.enPromo),
       isNouveau: Boolean(form.isNouveau),
       masquerSurSite: Boolean(form.masquerSurSite),
@@ -643,7 +661,7 @@ export default function AdminProduits() {
       marqueId: form.hasMarque && form.marqueId ? Number(form.marqueId) : null,
       etat: form.etat || "neuf",
       poids: form.poids || "",
-      famille: form.famille || "Accessoires",
+      famille: form.famille || "Matériaux BTP & Construction",
       images: (form.images || []).filter(img => Boolean(img && img.trim())),
       couleurs: (form.couleurs || []).filter(c => Boolean(c.nom && c.nom.trim())).map(c => {
         const val = c.quantite !== "" && c.quantite !== undefined && c.quantite !== null ? Number(c.quantite) : (c.stock !== "" && c.stock !== undefined && c.stock !== null ? Number(c.stock) : null);
@@ -1842,24 +1860,156 @@ export default function AdminProduits() {
               </div>
             </div>
 
-            {/* SECTION CLASSEMENT NOUVEAUTÉ ET ÉTOILES */}
-            <div style={{ background: "var(--paper)", padding: 16, borderRadius: 12, border: "1px solid var(--line)", display: "flex", flexDirection: "column", gap: 14 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <input
-                  type="checkbox"
-                  id="isNouveau"
-                  checked={form.isNouveau}
-                  onChange={(e) => set("isNouveau", e.target.checked)}
-                  style={{ width: 18, height: 18, accentColor: "var(--forest)", cursor: "pointer" }}
-                />
-                <div>
-                  <label htmlFor="isNouveau" style={{ fontWeight: 700, fontSize: 13.5, color: "var(--forest-dark)", cursor: "pointer", margin: 0 }}>
-                    Marquer comme NOUVEAU produit (Nouveauté) ?
+            {/* SECTION SPÉCIFICATIONS BTP & CONDITIONNEMENT */}
+            <div style={{ background: "#F0FDF4", padding: 18, borderRadius: 14, border: "1.5px solid #86EFAC", display: "flex", flexDirection: "column", gap: 14 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, borderBottom: "1px solid #BBF7D0", paddingBottom: 8 }}>
+                <span style={{ fontSize: 16 }}>🏗️</span>
+                <span style={{ fontWeight: 800, fontSize: 14.5, color: "#166534" }}>
+                  Spécifications BTP, Disponibilité & Mode de Tarification
+                </span>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 14 }}>
+                <div className="bs-input-group">
+                  <label style={{ fontSize: 13, fontWeight: 700, color: "#1E293B" }}>
+                    Volume / Conditionnement (ex: 8 m³, Sac 50 kg, Barre 12 m)
                   </label>
-                  <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2 }}>
-                    Si cette option est activée, le produit apparaîtra dans la section "Nouveaux Produits" sur la page d'accueil avec un badge NOUVEAU.
-                  </div>
+                  <input
+                    className="bs-input"
+                    placeholder="ex: Voyage de 8 m³, Sac de 50 kg, Barre de 12 m..."
+                    value={form.volume}
+                    onChange={(e) => set("volume", e.target.value)}
+                    style={{ background: "#fff" }}
+                  />
                 </div>
+
+                <div className="bs-input-group">
+                  <label style={{ fontSize: 13, fontWeight: 700, color: "#1E293B" }}>
+                    Type de tarification *
+                  </label>
+                  <select
+                    className="bs-select"
+                    value={form.isPrixFixe ? "fixe" : "indicatif"}
+                    onChange={(e) => set("isPrixFixe", e.target.value === "fixe")}
+                    style={{ background: "#fff", fontWeight: 700 }}
+                  >
+                    <option value="fixe">Prix Fixe garanti (Vente directe au prix affiché)</option>
+                    <option value="indicatif">Prix indicatif / devis (Ajustable selon volume ou zone de chantier)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 14 }}>
+                <div className="bs-input-group">
+                  <label style={{ fontSize: 13, fontWeight: 700, color: "#1E293B" }}>
+                    Disponibilité en dépôt *
+                  </label>
+                  <select
+                    className="bs-select"
+                    value={form.disponibilite || "en_stock"}
+                    onChange={(e) => set("disponibilite", e.target.value)}
+                    style={{ background: "#fff", fontWeight: 700 }}
+                  >
+                    <option value="en_stock">En stock au dépôt (Chargement immédiat)</option>
+                    <option value="sur_commande">Sur commande (Livraison chantier sous 1 à 2 semaines)</option>
+                  </select>
+                </div>
+
+                {form.disponibilite === "sur_commande" && (
+                  <div className="bs-input-group">
+                    <label style={{ fontSize: 13, fontWeight: 700, color: "#1E293B" }}>
+                      Délai de commande / approvisionnement
+                    </label>
+                    <input
+                      className="bs-input"
+                      placeholder="ex: 1 à 2 semaines (Comores)"
+                      value={form.delaiCommande || "1 à 2 semaines"}
+                      onChange={(e) => set("delaiCommande", e.target.value)}
+                      style={{ background: "#fff" }}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* SECTION CLASSEMENT ACCUEIL (PLUS VENDU, RECOMMANDÉ, NOUVEAUTÉ) */}
+            <div style={{ background: "var(--paper)", padding: 16, borderRadius: 12, border: "1px solid var(--line)", display: "flex", flexDirection: "column", gap: 14 }}>
+              <div style={{ fontWeight: 800, fontSize: 14, color: "var(--ink)", marginBottom: 2 }}>
+                Badges de mise en avant sur la page d'accueil :
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+                {/* PLUS VENDU */}
+                <label style={{
+                  display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 12px",
+                  background: form.isPlusVendu ? "#FEF3C7" : "#fff",
+                  border: form.isPlusVendu ? "1.5px solid #F59E0B" : "1px solid var(--line)",
+                  borderRadius: 10, cursor: "pointer"
+                }}>
+                  <input
+                    type="checkbox"
+                    id="isPlusVendu"
+                    checked={Boolean(form.isPlusVendu)}
+                    onChange={(e) => set("isPlusVendu", e.target.checked)}
+                    style={{ width: 18, height: 18, accentColor: "#D97706", cursor: "pointer", marginTop: 2 }}
+                  />
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: 13, color: form.isPlusVendu ? "#92400E" : "var(--ink)" }}>
+                      🔥 Plus Vendu
+                    </div>
+                    <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 2 }}>
+                      Section "Nos Plus Vendus"
+                    </div>
+                  </div>
+                </label>
+
+                {/* RECOMMANDÉ */}
+                <label style={{
+                  display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 12px",
+                  background: form.isRecommande ? "#EFF6FF" : "#fff",
+                  border: form.isRecommande ? "1.5px solid #3B82F6" : "1px solid var(--line)",
+                  borderRadius: 10, cursor: "pointer"
+                }}>
+                  <input
+                    type="checkbox"
+                    id="isRecommande"
+                    checked={Boolean(form.isRecommande)}
+                    onChange={(e) => set("isRecommande", e.target.checked)}
+                    style={{ width: 18, height: 18, accentColor: "#2563EB", cursor: "pointer", marginTop: 2 }}
+                  />
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: 13, color: form.isRecommande ? "#1D4ED8" : "var(--ink)" }}>
+                      ⭐ Recommandé
+                    </div>
+                    <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 2 }}>
+                      Section "Recommandés par nos Experts"
+                    </div>
+                  </div>
+                </label>
+
+                {/* NOUVEAUTÉ */}
+                <label style={{
+                  display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 12px",
+                  background: form.isNouveau ? "#ECFDF5" : "#fff",
+                  border: form.isNouveau ? "1.5px solid #10B981" : "1px solid var(--line)",
+                  borderRadius: 10, cursor: "pointer"
+                }}>
+                  <input
+                    type="checkbox"
+                    id="isNouveau"
+                    checked={Boolean(form.isNouveau)}
+                    onChange={(e) => set("isNouveau", e.target.checked)}
+                    style={{ width: 18, height: 18, accentColor: "var(--forest)", cursor: "pointer", marginTop: 2 }}
+                  />
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: 13, color: form.isNouveau ? "#065F46" : "var(--ink)" }}>
+                      ✨ Nouveauté
+                    </div>
+                    <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 2 }}>
+                      Section "Nouveaux Arrivages"
+                    </div>
+                  </div>
+                </label>
               </div>
 
               <div style={{ borderTop: "1px solid var(--line)", paddingTop: 12, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>

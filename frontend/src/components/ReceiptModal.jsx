@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Printer, Download, X, RotateCcw, ShoppingBag, Store, Truck, Sparkles, Share2, MessageCircle } from "lucide-react";
+import { Printer, Download, X, RotateCcw, ShoppingBag, Store, Truck, Sparkles, Share2, MessageCircle, FileText } from "lucide-react";
 import { toast } from "react-hot-toast";
 import jsPDF from "jspdf";
 import { useAuth } from "../context/AuthContext.jsx";
 import { formatPrice as fcfa } from "../utils/currency.js";
 import { ReceiptPrinter, BarcodeSvg } from "./ReceiptPrinter.jsx";
+import CorporateInvoiceA4, { generateCorporateInvoiceA4Pdf } from "./CorporateInvoiceA4.jsx";
 
 function cleanPdfText(text) {
   if (!text) return "";
@@ -128,6 +129,7 @@ export default function ReceiptModal({
   const boutique = boutiqueProp || boutiqueContext;
 
   const [stage, setStage] = useState(autoAnimate ? "processing" : "complete");
+  const [viewMode, setViewMode] = useState("a4"); // "a4" (Facture A4 Entreprise Image 4) | "ticket" (Ticket POS 80mm)
   const timersRef = useRef([]);
 
   const runAnimation = () => {
@@ -547,6 +549,37 @@ export default function ReceiptModal({
   };
 
   const handleDownloadPDF = () => {
+    if (viewMode === "a4") {
+      try {
+        const { doc, blob, fileName } = generateCorporateInvoiceA4Pdf(
+          order,
+          boutique,
+          order.employeAssigne?.nom || user?.nom
+        );
+        try {
+          const blobUrl = window.URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.style.display = "none";
+          link.href = blobUrl;
+          link.download = fileName;
+          link.setAttribute("download", fileName);
+          document.body.appendChild(link);
+          link.click();
+          setTimeout(() => {
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(blobUrl);
+          }, 1500);
+        } catch (saveErr) {
+          doc.save(fileName);
+        }
+        toast.success("Facture Officielle A4 PDF téléchargée avec succès !");
+      } catch (err) {
+        console.error("Erreur téléchargement facture A4:", err);
+        toast.error("Erreur lors de la génération de la facture A4.");
+      }
+      return;
+    }
+
     try {
       const { doc, blob, fileName } = buildPdfBlob();
       try {
@@ -565,10 +598,10 @@ export default function ReceiptModal({
       } catch (saveErr) {
         doc.save(fileName);
       }
-      toast.success("Facture PDF telechargee avec succes !");
+      toast.success("Ticket de caisse téléchargé !");
     } catch (err) {
-      console.error("Erreur telechargement PDF ticket:", err);
-      toast.error("Erreur lors de la generation du PDF.");
+      console.error("Erreur téléchargement PDF ticket:", err);
+      toast.error("Erreur lors de la génération du ticket.");
     }
   };
 
@@ -635,13 +668,13 @@ export default function ReceiptModal({
         position: "fixed",
         inset: 0,
         zIndex: 99999,
-        background: "rgba(10, 15, 29, 0.75)",
+        background: "rgba(10, 15, 29, 0.82)",
         backdropFilter: "blur(8px)",
         WebkitBackdropFilter: "blur(8px)",
         display: "flex",
-        alignItems: "center",
+        alignItems: "flex-start",
         justifyContent: "center",
-        padding: "16px 12px",
+        padding: "20px 12px 40px",
         overflowY: "auto"
       }}
     >
@@ -649,18 +682,85 @@ export default function ReceiptModal({
         onClick={(e) => e.stopPropagation()}
         style={{
           width: "100%",
-          maxWidth: 440,
-          margin: "auto",
+          maxWidth: viewMode === "a4" ? 800 : 440,
+          margin: "0 auto",
           display: "flex",
           flexDirection: "column",
-          alignItems: "center"
+          alignItems: "center",
+          transition: "max-width 0.25s ease"
         }}
       >
-        <ReceiptPrinter.Root
-          stage={stage}
-          feedMotion="stepped"
-          animate={true}
-        >
+        {/* ── TOP SWITCHER BAR & CLOSE BUTTON ── */}
+        <div style={{
+          width: "100%",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 12,
+          padding: "0 4px",
+          gap: 8,
+          flexWrap: "wrap"
+        }}>
+          <div style={{ display: "flex", background: "rgba(255,255,255,0.12)", padding: 4, borderRadius: 14, gap: 4 }}>
+            <button
+              type="button"
+              onClick={() => setViewMode("a4")}
+              style={{
+                padding: "7px 16px", borderRadius: 10, border: "none", cursor: "pointer",
+                background: viewMode === "a4" ? "#0F4C81" : "transparent",
+                color: "#ffffff", fontWeight: 800, fontSize: 13,
+                display: "flex", alignItems: "center", gap: 6,
+                boxShadow: viewMode === "a4" ? "0 2px 10px rgba(15,76,129,0.5)" : "none",
+                transition: "all 0.15s ease"
+              }}
+            >
+              <FileText size={16} /> Facture Corporate A4 (BTP)
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("ticket")}
+              style={{
+                padding: "7px 16px", borderRadius: 10, border: "none", cursor: "pointer",
+                background: viewMode === "ticket" ? "var(--forest)" : "transparent",
+                color: "#ffffff", fontWeight: 800, fontSize: 13,
+                display: "flex", alignItems: "center", gap: 6,
+                boxShadow: viewMode === "ticket" ? "0 2px 10px rgba(0,0,0,0.3)" : "none",
+                transition: "all 0.15s ease"
+              }}
+            >
+              <Printer size={16} /> Ticket Caisse POS (80mm)
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            title="Fermer"
+            style={{
+              background: "rgba(255, 255, 255, 0.18)", border: "none",
+              borderRadius: "50%", width: 34, height: 34,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "#ffffff", cursor: "pointer",
+              transition: "background 0.15s ease"
+            }}
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* ── CORPS DE LA FACTURE : MODE A4 OU TICKET POS ── */}
+        {viewMode === "a4" ? (
+          <CorporateInvoiceA4 
+            order={order} 
+            boutique={boutique} 
+            cashierName={order.employeAssigne?.nom || user?.nom} 
+          />
+        ) : (
+          <ReceiptPrinter.Root
+            stage={stage}
+            feedMotion="stepped"
+            animate={true}
+          >
           {/* PRINTER DEVICE */}
           <ReceiptPrinter.Machine>
             {/* Top header on the printer device */}
@@ -1197,109 +1297,109 @@ export default function ReceiptModal({
             </ReceiptPrinter.Paper>
           </ReceiptPrinter.Output>
         </ReceiptPrinter.Root>
+        )}
 
-        {/* BOTTOM ACTION BUTTONS */}
+        {/* ── BOTTOM ACTION BUTTONS ── */}
         <div
           style={{
             display: "flex",
             flexDirection: "column",
-            gap: 8,
+            gap: 10,
             width: "100%",
-            maxWidth: 380,
-            marginTop: 14,
-            padding: "0 6px"
+            maxWidth: viewMode === "a4" ? 780 : 380,
+            marginTop: 16,
+            padding: "0 4px"
           }}
         >
-          <div style={{ display: "flex", gap: 8, width: "100%" }}>
+          <div style={{ display: "flex", gap: 10, width: "100%", flexWrap: "wrap" }}>
             <button
               type="button"
               onClick={handleDownloadPDF}
               style={{
                 flex: 1,
-                padding: "10px 12px",
-                borderRadius: 12,
-                background: "var(--forest)",
+                minWidth: 180,
+                padding: "12px 18px",
+                borderRadius: 14,
+                background: viewMode === "a4" ? "#0F4C81" : "var(--forest)",
                 color: "#fff",
                 border: "none",
                 fontWeight: 800,
-                fontSize: 12.5,
+                fontSize: 13.5,
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 6,
-                boxShadow: "0 4px 12px rgba(31, 77, 58, 0.35)",
+                gap: 8,
+                boxShadow: viewMode === "a4" ? "0 4px 14px rgba(15, 76, 129, 0.4)" : "0 4px 12px rgba(31, 77, 58, 0.35)",
                 transition: "transform 0.15s ease"
               }}
             >
-              <Download size={15} /> Télécharger PDF
+              <Download size={17} /> {viewMode === "a4" ? "Télécharger Facture PDF (A4)" : "Télécharger Ticket PDF"}
             </button>
 
             <button
               type="button"
               onClick={handleShare}
-              title="Partager la facture directement sur WhatsApp"
+              title="Partager directement sur WhatsApp"
               style={{
                 flex: 1,
-                padding: "10px 12px",
-                borderRadius: 12,
+                minWidth: 160,
+                padding: "12px 18px",
+                borderRadius: 14,
                 background: "#25D366",
                 color: "#fff",
                 border: "none",
                 fontWeight: 800,
-                fontSize: 12.5,
+                fontSize: 13.5,
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 6,
-                boxShadow: "0 4px 12px rgba(37, 211, 102, 0.35)",
+                gap: 8,
+                boxShadow: "0 4px 14px rgba(37, 211, 102, 0.35)",
                 transition: "transform 0.15s ease"
               }}
             >
-              <MessageCircle size={15} /> Partager Facture
-            </button>
-          </div>
-
-          <div style={{ display: "flex", gap: 8, width: "100%" }}>
-            <button
-              type="button"
-              onClick={onContinue || onClose}
-              style={{
-                flex: 1,
-                padding: "9px 14px",
-                borderRadius: 12,
-                background: "#FFFFFF",
-                border: "1px solid #CBD5E1",
-                color: "#1E293B",
-                fontWeight: 800,
-                fontSize: 12.5,
-                cursor: "pointer",
-                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.05)"
-              }}
-            >
-              {onContinue ? "Continuer" : "Fermer"}
+              <MessageCircle size={17} /> Transmettre sur WhatsApp
             </button>
 
             <button
               type="button"
               onClick={() => window.print()}
-              title="Imprimer sur imprimante physique"
+              title="Imprimer"
               style={{
-                width: 40,
-                height: 40,
-                borderRadius: 12,
+                padding: "12px 18px",
+                borderRadius: 14,
                 background: "#F1F5F9",
                 border: "1px solid #CBD5E1",
-                color: "#475569",
+                color: "#0F172A",
+                fontWeight: 800,
+                fontSize: 13.5,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                cursor: "pointer",
-                flexShrink: 0
+                gap: 6,
+                cursor: "pointer"
               }}
             >
-              <Printer size={15} />
+              <Printer size={17} /> Imprimer
+            </button>
+
+            <button
+              type="button"
+              onClick={onContinue || onClose}
+              style={{
+                padding: "12px 20px",
+                borderRadius: 14,
+                background: "#FFFFFF",
+                border: "1px solid #CBD5E1",
+                color: "#1E293B",
+                fontWeight: 800,
+                fontSize: 13.5,
+                cursor: "pointer"
+              }}
+            >
+              {onContinue ? "Continuer" : "Fermer"}
             </button>
           </div>
         </div>

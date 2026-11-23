@@ -2,7 +2,7 @@ const sharp = require("sharp");
 const fs = require("fs");
 const path = require("path");
 
-// Clés API
+// Clés API via variables d'environnement (.env)
 const GROQ_API_KEY = process.env.GROQ_API_KEY || "";
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 const COHERE_API_KEY = process.env.COHERE_API_KEY || "";

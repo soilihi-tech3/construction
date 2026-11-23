@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { ShoppingCart, Search, User, LogOut, Store, X, Home, Grid, Package, Shield, Menu, ChevronDown, Info, Heart, Sun, Moon, Smartphone, MoreHorizontal, Zap, ClipboardList } from "lucide-react";
+import { ShoppingCart, Search, User, LogOut, Store, X, Home, Grid, Package, Shield, Menu, ChevronDown, Info, Heart, Sun, Moon, Smartphone, MoreHorizontal, Zap, ClipboardList, HardHat, Phone, MessageCircle, Mail } from "lucide-react";
 
 import { useCart } from "../context/CartContext.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -630,6 +630,40 @@ export default function Header({ setCartOpen: setCartOpenProp }) {
               {theme === "dark" ? <Sun size={18} color="#F59E0B" /> : <Moon size={18} color="var(--forest-dark)" />}
             </button>
 
+            {/* BOUTON DIRECT WHATSAPP (Conforme à la maquette Ets Lihoma) */}
+            {(() => {
+              const phone = (boutique?.whatsappNumber || boutique?.telephone || "+269 333 00 00").replace(/[^0-9]/g, "");
+              const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent("Bonjour, je vous contacte depuis le site concernant des matériaux ou services BTP.")}`;
+              return (
+                <a
+                  href={waUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bs-desktop-whatsapp-pill"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    background: "#22C55E",
+                    color: "#ffffff",
+                    padding: "9px 18px",
+                    borderRadius: 24,
+                    fontSize: 13.5,
+                    fontWeight: 800,
+                    textDecoration: "none",
+                    boxShadow: "0 2px 8px rgba(34, 197, 94, 0.28)",
+                    transition: "all 0.2s ease",
+                    flexShrink: 0
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = "#16A34A"}
+                  onMouseLeave={(e) => e.currentTarget.style.background = "#22C55E"}
+                >
+                  <MessageCircle size={18} />
+                  <span>WhatsApp</span>
+                </a>
+              );
+            })()}
+
             <button className="bs-cart-btn" onClick={() => setCartOpen(true)} style={{
               display: "flex", alignItems: "center", gap: 10, padding: "10px 22px", borderRadius: 28,
               fontSize: 14.5, fontWeight: 800, flexShrink: 0
@@ -862,15 +896,15 @@ export default function Header({ setCartOpen: setCartOpenProp }) {
 
         {/* ROW 2: DESKTOP NAVIGATION BAR (BOUTONS MAQUETTE HAUT DE GAMME) */}
         <div className="bs-desktop-nav" style={{ position: "relative", zIndex: 100, background: "var(--card)", borderBottom: "1px solid var(--line)", padding: "10px clamp(16px, 2.5vw, 36px)" }}>
-          <div style={{ maxWidth: 1520, margin: "0 auto", display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
+          <div style={{ maxWidth: 1520, margin: "0 auto", display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
             
             {/* ACCUEIL */}
             <Link
               to="/"
               style={{
-                fontSize: 15, fontWeight: 700, textDecoration: "none",
-                display: "inline-flex", alignItems: "center", gap: 8, whiteSpace: "nowrap",
-                padding: "9px 20px", borderRadius: 30, transition: "all 0.2s ease",
+                fontSize: 14.5, fontWeight: 700, textDecoration: "none",
+                display: "inline-flex", alignItems: "center", gap: 7, whiteSpace: "nowrap",
+                padding: "8px 18px", borderRadius: 30, transition: "all 0.2s ease",
                 background: location.pathname === "/" ? "var(--forest-light)" : "transparent",
                 color: location.pathname === "/" ? "var(--forest)" : "var(--ink)",
                 border: location.pathname === "/" ? "1.5px solid var(--forest)" : "1.5px solid transparent",
@@ -889,44 +923,16 @@ export default function Header({ setCartOpen: setCartOpenProp }) {
                 }
               }}
             >
-              <Home size={18} /> <span>Accueil</span>
-            </Link>
-
-            {/* DEMANDE SUR-MESURE */}
-            <Link
-              to="/demande-sur-mesure"
-              style={{
-                fontSize: 15, fontWeight: 700, textDecoration: "none",
-                display: "inline-flex", alignItems: "center", gap: 8, whiteSpace: "nowrap",
-                padding: "9px 20px", borderRadius: 30, transition: "all 0.2s ease",
-                background: location.pathname === "/demande-sur-mesure" ? "var(--forest-light)" : "transparent",
-                color: location.pathname === "/demande-sur-mesure" ? "var(--forest)" : "var(--ink)",
-                border: location.pathname === "/demande-sur-mesure" ? "1.5px solid var(--forest)" : "1.5px solid transparent",
-                boxShadow: location.pathname === "/demande-sur-mesure" ? "0 2px 10px rgba(37, 99, 235, 0.12)" : "none"
-              }}
-              onMouseEnter={(e) => {
-                if (location.pathname !== "/demande-sur-mesure") {
-                  e.currentTarget.style.background = "var(--paper)";
-                  e.currentTarget.style.borderColor = "var(--line)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (location.pathname !== "/demande-sur-mesure") {
-                  e.currentTarget.style.background = "transparent";
-                  e.currentTarget.style.borderColor = "transparent";
-                }
-              }}
-            >
-              <ClipboardList size={18} /> <span>Faire une demande</span>
+              <Home size={17} /> <span>Accueil</span>
             </Link>
 
             {/* CATALOGUE */}
             <Link
               to="/catalogue"
               style={{
-                fontSize: 15, fontWeight: 700, textDecoration: "none",
-                display: "inline-flex", alignItems: "center", gap: 8, whiteSpace: "nowrap",
-                padding: "9px 20px", borderRadius: 30, transition: "all 0.2s ease",
+                fontSize: 14.5, fontWeight: 700, textDecoration: "none",
+                display: "inline-flex", alignItems: "center", gap: 7, whiteSpace: "nowrap",
+                padding: "8px 18px", borderRadius: 30, transition: "all 0.2s ease",
                 background: location.pathname === "/catalogue" && !location.search.includes("favoris=1") ? "var(--forest-light)" : "transparent",
                 color: location.pathname === "/catalogue" && !location.search.includes("favoris=1") ? "var(--forest)" : "var(--ink)",
                 border: location.pathname === "/catalogue" && !location.search.includes("favoris=1") ? "1.5px solid var(--forest)" : "1.5px solid transparent",
@@ -945,16 +951,128 @@ export default function Header({ setCartOpen: setCartOpenProp }) {
                 }
               }}
             >
-              <Grid size={18} /> <span>Catalogue</span>
+              <Grid size={17} /> <span>Catalogue</span>
+            </Link>
+
+            {/* NOS SERVICES */}
+            <Link
+              to="/services"
+              style={{
+                fontSize: 14.5, fontWeight: 700, textDecoration: "none",
+                display: "inline-flex", alignItems: "center", gap: 7, whiteSpace: "nowrap",
+                padding: "8px 18px", borderRadius: 30, transition: "all 0.2s ease",
+                background: location.pathname === "/services" ? "var(--forest-light)" : "transparent",
+                color: location.pathname === "/services" ? "var(--forest)" : "var(--ink)",
+                border: location.pathname === "/services" ? "1.5px solid var(--forest)" : "1.5px solid transparent",
+                boxShadow: location.pathname === "/services" ? "0 2px 10px rgba(190, 24, 93, 0.12)" : "none"
+              }}
+              onMouseEnter={(e) => {
+                if (location.pathname !== "/services") {
+                  e.currentTarget.style.background = "var(--paper)";
+                  e.currentTarget.style.borderColor = "var(--line)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (location.pathname !== "/services") {
+                  e.currentTarget.style.background = "transparent";
+                  e.currentTarget.style.borderColor = "transparent";
+                }
+              }}
+            >
+              <HardHat size={17} /> <span>Nos Services</span>
+            </Link>
+
+            {/* A PROPOS */}
+            <Link
+              to="/a-propos"
+              style={{
+                fontSize: 14.5, fontWeight: 700, textDecoration: "none",
+                display: "inline-flex", alignItems: "center", gap: 7, whiteSpace: "nowrap",
+                padding: "8px 18px", borderRadius: 30, transition: "all 0.2s ease",
+                background: location.pathname === "/a-propos" ? "var(--forest-light)" : "transparent",
+                color: location.pathname === "/a-propos" ? "var(--forest)" : "var(--ink)",
+                border: location.pathname === "/a-propos" ? "1.5px solid var(--forest)" : "1.5px solid transparent",
+                boxShadow: location.pathname === "/a-propos" ? "0 2px 10px rgba(190, 24, 93, 0.12)" : "none"
+              }}
+              onMouseEnter={(e) => {
+                if (location.pathname !== "/a-propos") {
+                  e.currentTarget.style.background = "var(--paper)";
+                  e.currentTarget.style.borderColor = "var(--line)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (location.pathname !== "/a-propos") {
+                  e.currentTarget.style.background = "transparent";
+                  e.currentTarget.style.borderColor = "transparent";
+                }
+              }}
+            >
+              <Info size={17} /> <span>À propos</span>
+            </Link>
+
+            {/* CONTACT */}
+            <Link
+              to="/contact"
+              style={{
+                fontSize: 14.5, fontWeight: 700, textDecoration: "none",
+                display: "inline-flex", alignItems: "center", gap: 7, whiteSpace: "nowrap",
+                padding: "8px 18px", borderRadius: 30, transition: "all 0.2s ease",
+                background: location.pathname === "/contact" ? "var(--forest-light)" : "transparent",
+                color: location.pathname === "/contact" ? "var(--forest)" : "var(--ink)",
+                border: location.pathname === "/contact" ? "1.5px solid var(--forest)" : "1.5px solid transparent",
+                boxShadow: location.pathname === "/contact" ? "0 2px 10px rgba(190, 24, 93, 0.12)" : "none"
+              }}
+              onMouseEnter={(e) => {
+                if (location.pathname !== "/contact") {
+                  e.currentTarget.style.background = "var(--paper)";
+                  e.currentTarget.style.borderColor = "var(--line)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (location.pathname !== "/contact") {
+                  e.currentTarget.style.background = "transparent";
+                  e.currentTarget.style.borderColor = "transparent";
+                }
+              }}
+            >
+              <Phone size={17} /> <span>Contact</span>
+            </Link>
+
+            {/* DEMANDE SUR-MESURE */}
+            <Link
+              to="/demande-sur-mesure"
+              style={{
+                fontSize: 14.5, fontWeight: 700, textDecoration: "none",
+                display: "inline-flex", alignItems: "center", gap: 7, whiteSpace: "nowrap",
+                padding: "8px 18px", borderRadius: 30, transition: "all 0.2s ease",
+                background: location.pathname === "/demande-sur-mesure" ? "var(--forest-light)" : "transparent",
+                color: location.pathname === "/demande-sur-mesure" ? "var(--forest)" : "var(--ink)",
+                border: location.pathname === "/demande-sur-mesure" ? "1.5px solid var(--forest)" : "1.5px solid transparent",
+                boxShadow: location.pathname === "/demande-sur-mesure" ? "0 2px 10px rgba(37, 99, 235, 0.12)" : "none"
+              }}
+              onMouseEnter={(e) => {
+                if (location.pathname !== "/demande-sur-mesure") {
+                  e.currentTarget.style.background = "var(--paper)";
+                  e.currentTarget.style.borderColor = "var(--line)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (location.pathname !== "/demande-sur-mesure") {
+                  e.currentTarget.style.background = "transparent";
+                  e.currentTarget.style.borderColor = "transparent";
+                }
+              }}
+            >
+              <ClipboardList size={17} /> <span>Faire une demande</span>
             </Link>
 
             {/* FAVORIS */}
             <Link
               to="/catalogue?favoris=1"
               style={{
-                fontSize: 15, fontWeight: 700, textDecoration: "none",
-                display: "inline-flex", alignItems: "center", gap: 8, whiteSpace: "nowrap",
-                padding: "9px 20px", borderRadius: 30, transition: "all 0.2s ease",
+                fontSize: 14.5, fontWeight: 700, textDecoration: "none",
+                display: "inline-flex", alignItems: "center", gap: 7, whiteSpace: "nowrap",
+                padding: "8px 18px", borderRadius: 30, transition: "all 0.2s ease",
                 background: location.search.includes("favoris=1") ? "#FDF2F0" : "transparent",
                 color: location.search.includes("favoris=1") ? "#B4483A" : "var(--ink)",
                 border: location.search.includes("favoris=1") ? "1.5px solid #B4483A" : "1.5px solid transparent",
@@ -973,7 +1091,7 @@ export default function Header({ setCartOpen: setCartOpenProp }) {
                 }
               }}
             >
-              <span>Favoris</span>
+              <Heart size={16} color="#B4483A" /> <span>Favoris</span>
             </Link>
 
             {/* MES COMMANDES */}
@@ -981,15 +1099,15 @@ export default function Header({ setCartOpen: setCartOpenProp }) {
               <Link
                 to="/mes-commandes"
                 style={{
-                  fontSize: 15, fontWeight: 700, textDecoration: "none",
-                  display: "inline-flex", alignItems: "center", gap: 8, whiteSpace: "nowrap",
-                  padding: "9px 20px", borderRadius: 30, transition: "all 0.2s ease",
+                  fontSize: 14.5, fontWeight: 700, textDecoration: "none",
+                  display: "inline-flex", alignItems: "center", gap: 7, whiteSpace: "nowrap",
+                  padding: "8px 18px", borderRadius: 30, transition: "all 0.2s ease",
                   background: location.pathname === "/mes-commandes" ? "var(--forest-light)" : "transparent",
                   color: location.pathname === "/mes-commandes" ? "var(--forest)" : "var(--ink)",
                   border: location.pathname === "/mes-commandes" ? "1.5px solid var(--forest)" : "1.5px solid transparent"
                 }}
               >
-                <Package size={18} /> <span>Mes commandes</span>
+                <Package size={17} /> <span>Mes commandes</span>
               </Link>
             )}
           </div>
@@ -1174,7 +1292,7 @@ export default function Header({ setCartOpen: setCartOpenProp }) {
               </button>
 
               <Link 
-                to="/catalogue?favoris=1" 
+                to="/services" 
                 onClick={() => setMobileMoreOpen(false)} 
                 style={{ 
                   display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", 
@@ -1183,8 +1301,36 @@ export default function Header({ setCartOpen: setCartOpenProp }) {
                   transition: "background 0.15s"
                 }}
               >
-                <Heart size={18} color="#B4483A" fill="#B4483A" />
-                <span style={{ flex: 1 }}>Favoris</span>
+                <HardHat size={18} color="var(--forest)" />
+                <span style={{ flex: 1 }}>Nos Services BTP</span>
+              </Link>
+
+              <Link 
+                to="/a-propos" 
+                onClick={() => setMobileMoreOpen(false)} 
+                style={{ 
+                  display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", 
+                  textDecoration: "none", color: "var(--ink)", fontWeight: 700, fontSize: 14,
+                  borderBottom: "1px solid var(--line)", background: "var(--card)",
+                  transition: "background 0.15s"
+                }}
+              >
+                <Info size={18} color="var(--ink)" />
+                <span style={{ flex: 1 }}>À propos de nous</span>
+              </Link>
+
+              <Link 
+                to="/contact" 
+                onClick={() => setMobileMoreOpen(false)} 
+                style={{ 
+                  display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", 
+                  textDecoration: "none", color: "var(--ink)", fontWeight: 700, fontSize: 14,
+                  borderBottom: "1px solid var(--line)", background: "var(--card)",
+                  transition: "background 0.15s"
+                }}
+              >
+                <Phone size={18} color="#16A34A" />
+                <span style={{ flex: 1 }}>Contact & Dépôt</span>
               </Link>
 
               <Link 
@@ -1193,12 +1339,26 @@ export default function Header({ setCartOpen: setCartOpenProp }) {
                 style={{ 
                   display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", 
                   textDecoration: "none", color: "var(--ink)", fontWeight: 700, fontSize: 14,
-                  borderBottom: user ? "1px solid var(--line)" : "none", background: "var(--card)",
+                  borderBottom: "1px solid var(--line)", background: "var(--card)",
                   transition: "background 0.15s"
                 }}
               >
                 <ClipboardList size={18} color="#2563EB" />
-                <span style={{ flex: 1 }}>Faire une demande sur-mesure</span>
+                <span style={{ flex: 1 }}>Faire une demande de devis</span>
+              </Link>
+
+              <Link 
+                to="/catalogue?favoris=1" 
+                onClick={() => setMobileMoreOpen(false)} 
+                style={{ 
+                  display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", 
+                  textDecoration: "none", color: "var(--ink)", fontWeight: 700, fontSize: 14,
+                  borderBottom: user ? "1px solid var(--line)" : "none", background: "var(--card)",
+                  transition: "background 0.15s"
+                }}
+              >
+                <Heart size={18} color="#B4483A" fill="#B4483A" />
+                <span style={{ flex: 1 }}>Favoris</span>
               </Link>
 
               {user && (

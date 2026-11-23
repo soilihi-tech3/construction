@@ -238,6 +238,21 @@ export const formatPrice = (amount, devise) => {
 };
 
 /**
+ * Formatage double monnaie KMF (principal) et EUR (€) pour le BTP aux Comores
+ * Parité officielle : 1 EUR = 491.96775 KMF
+ */
+export const formatDualPrice = (amountKmf, euroAmount = null) => {
+  const kmf = Number(amountKmf || 0);
+  const eur = euroAmount !== null && euroAmount !== undefined && Number(euroAmount) > 0
+    ? Number(euroAmount)
+    : (kmf > 0 ? Math.round((kmf / 491.96775) * 100) / 100 : 0);
+
+  const kmfStr = kmf.toLocaleString("fr-FR", { maximumFractionDigits: 0 }) + " KMF";
+  const eurStr = eur.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+  return { kmfStr, eurStr, kmf, eur };
+};
+
+/**
  * Retourne le prix effectif du produit selon la devise active
  * Conserve la priorité sur prix / prixPromo (KMF) et prixSenegal / prixPromoSenegal (FCFA)
  * tout en supportant prixParDevise / prixPromoParDevise pour les autres devises (EUR, USD...).

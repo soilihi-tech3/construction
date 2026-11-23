@@ -3,7 +3,7 @@ import { NavLink, Link, Outlet, useLocation, useNavigate, Navigate } from "react
 import { 
   LayoutDashboard, Package, ShoppingCart, Users, Store, LogOut, Layers, 
   PanelLeftClose, PanelLeftOpen, User, Image, LayoutGrid, CreditCard, 
-  ShoppingBag, Truck, Scale, History, Menu, X, ExternalLink, ArrowLeft, Clock, Lock, UserCheck, Sun, Moon, PhoneCall, Award, MessageCircle, ClipboardList, Smartphone, Receipt, PiggyBank
+  ShoppingBag, Truck, Scale, History, Menu, X, ExternalLink, ArrowLeft, Clock, Lock, UserCheck, Sun, Moon, PhoneCall, Award, MessageCircle, ClipboardList, Smartphone, Receipt, PiggyBank, HardHat
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useCart } from "../../context/CartContext.jsx";
@@ -29,6 +29,7 @@ const ROUTE_MODULE_MAP = {
   "/admin/categories": { key: "categories", label: "Catégories" },
   "/admin/produits": { key: "produits", label: "Produits" },
   "/admin/commandes": { key: "commandes", label: "Commandes" },
+  "/admin/services": { key: "services", label: "Nos Services BTP" },
   "/admin/demandes": { key: "demandes", label: "Demandes & Devis" },
   "/admin/clients": { key: "clients", label: "Clients" },
   "/admin/employes": { key: "employes", label: "Équipe & Rôles" },
@@ -88,6 +89,7 @@ export default function AdminLayout() {
     { to: "/admin/demandes", label: "Demandes & Devis", icon: ClipboardList, permKey: ["voir_demandes", "creer_demande", "gerer_demandes", "supprimer_demandes", "demandes_devis"], moduleKey: "demandes" },
     { to: "/admin/commandes", label: "Commandes", icon: ShoppingCart, permKey: ["gerer_commandes", "valider_commande", "changer_statut_commande", "assigner_commande"], moduleKey: "commandes" },
     { to: "/admin/produits", label: "Produits", icon: Package, permKey: ["voir_produits", "ajouter_modifier_produit", "supprimer_produit", "gerer_produits"], moduleKey: "produits" },
+    { to: "/admin/services", label: "Services BTP", icon: HardHat, permKey: ["gerer_services", "gerer_categories", "gerer_produits"], moduleKey: "services" },
     { to: "/admin/categories", label: "Catégories", icon: Layers, permKey: ["gerer_categories"], moduleKey: "categories" },
     { to: "/admin/marques", label: "Marques", icon: Award, permKey: ["voir_marques", "gerer_marques", "gerer_categories", "gerer_produits"], moduleKey: "marques" },
     { to: "/admin/telephones", label: "Modèles Téléphones", icon: Smartphone, permKey: ["voir_telephones", "gerer_telephones", "gerer_categories", "gerer_produits"], moduleKey: "telephones" },
