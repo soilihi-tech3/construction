@@ -66,23 +66,70 @@ async function seedBtp() {
       console.log(`✅ Boutique créée : ${boutique.nom} (ID: ${boutique.id})`);
     }
 
-    // 2. Utilisateurs Admin & Vendeur
-    await User.findOrCreate({
-      where: { email: "admin@etablissementlihoma.com" },
-      defaults: {
+    // 2. Utilisateurs : Super Admin, Admins BTP, Vendeur & Client
+    const usersToCreate = [
+      {
+        nom: "Super Admin Plateforme",
+        email: "superadmin@boutique-saas.com",
+        role: "super_admin",
+        pw: "SuperAdmin123!"
+      },
+      {
         nom: "Soilihi Abdou (Direction BTP)",
         email: "admin@etablissementlihoma.com",
-        motDePasseHash: hash("Admin123!"),
         role: "admin",
-        boutiqueId: boutique.id
+        boutiqueId: boutique.id,
+        pw: "Admin123!"
+      },
+      {
+        nom: "Soilihi Abdou (Admin)",
+        email: "admin@soilihitech.com",
+        role: "admin",
+        boutiqueId: boutique.id,
+        pw: "Admin123!"
+      },
+      {
+        nom: "Vendeur & Caissier Dépôt",
+        email: "vendeur@soilihitech.com",
+        role: "employe",
+        boutiqueId: boutique.id,
+        pw: "Employe123!",
+        permissions: ["voir_dashboard", "gerer_commandes", "ajouter_modifier_produit", "vente_directe", "caisse"]
+      },
+      {
+        nom: "Client BTP Test",
+        email: "client@example.com",
+        role: "client",
+        pw: "Client123!"
       }
-    });
+    ];
+
+    for (const u of usersToCreate) {
+      let usr = await User.findOne({ where: { email: u.email } });
+      if (!usr) {
+        await User.create({
+          nom: u.nom,
+          email: u.email,
+          motDePasseHash: hash(u.pw),
+          role: u.role,
+          boutiqueId: u.boutiqueId || null,
+          permissions: u.permissions || null
+        });
+      } else {
+        usr.motDePasseHash = hash(u.pw);
+        usr.role = u.role;
+        if (u.boutiqueId) usr.boutiqueId = u.boutiqueId;
+        if (u.permissions) usr.permissions = u.permissions;
+        await usr.save();
+      }
+    }
+    console.log("✅ Comptes utilisateurs (SuperAdmin, Admin, Vendeur, Client) configurés.");
 
     // 3. Les 8 Catégories BTP (Maquette Image 5)
     const categoriesData = [
       {
         nom: "Ciment & Liants",
-        slug: "ciment-liants",
+        famille: "Gros Œuvre",
         description: "Ciment Portland, chaux, colles et mortiers",
         icone: "📦",
         ordre: 1,
@@ -90,7 +137,7 @@ async function seedBtp() {
       },
       {
         nom: "Fer à béton & Métallerie",
-        slug: "fer-a-beton-metallerie",
+        famille: "Gros Œuvre",
         description: "Barres HA, treillis soudés, fils de fer",
         icone: "▦",
         ordre: 2,
@@ -98,7 +145,7 @@ async function seedBtp() {
       },
       {
         nom: "Sable & Gravier",
-        slug: "sable-gravier",
+        famille: "Gros Œuvre",
         description: "Sable noir concassé, gravier par camion 8 m³",
         icone: "🏔️",
         ordre: 3,
@@ -106,7 +153,7 @@ async function seedBtp() {
       },
       {
         nom: "Bois & Planches",
-        slug: "bois-planches",
+        famille: "Menuiserie & Coffrage",
         description: "Planches, chevrons, madriers de coffrage",
         icone: "🪵",
         ordre: 4,
@@ -114,7 +161,7 @@ async function seedBtp() {
       },
       {
         nom: "Contreplaqué & Panneaux",
-        slug: "contreplaque-panneaux",
+        famille: "Menuiserie & Coffrage",
         description: "Contreplaqué marine, MDF, coffrage filmé",
         icone: "🥞",
         ordre: 5,
@@ -122,7 +169,7 @@ async function seedBtp() {
       },
       {
         nom: "Quincaillerie",
-        slug: "quincaillerie",
+        famille: "Quincaillerie & Fixations",
         description: "Clous, vis, boulons, charnières de charpente",
         icone: "🔧",
         ordre: 6,
@@ -130,7 +177,7 @@ async function seedBtp() {
       },
       {
         nom: "Outillage",
-        slug: "outillage",
+        famille: "Outillage BTP",
         description: "Brouettes, pelles, pioches, truelles, casques",
         icone: "🔨",
         ordre: 7,
@@ -138,7 +185,7 @@ async function seedBtp() {
       },
       {
         nom: "Peinture & Finition",
-        slug: "peinture-finition",
+        famille: "Finition",
         description: "Peintures, enduits, pinceaux, rouleaux",
         icone: "🎨",
         ordre: 8,
@@ -149,11 +196,11 @@ async function seedBtp() {
     const catMap = {};
     for (const c of categoriesData) {
       const [catObj] = await Category.findOrCreate({
-        where: { slug: c.slug, boutiqueId: boutique.id },
+        where: { nom: c.nom, boutiqueId: boutique.id },
         defaults: c
       });
-      await catObj.update({ description: c.description, icone: c.icone, ordre: c.ordre });
-      catMap[c.slug] = catObj;
+      await catObj.update({ description: c.description, icone: c.icone, ordre: c.ordre, famille: c.famille });
+      catMap[c.nom] = catObj;
     }
     console.log("✅ 8 Catégories BTP configurées.");
 
@@ -280,7 +327,7 @@ async function seedBtp() {
         isRecommande: true,
         isNouveau: false,
         stock: 50,
-        categoryId: catMap["sable-gravier"]?.id,
+        categoryId: catMap["Sable & Gravier"]?.id,
         imageUrl: "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=800&q=80",
         description: "Gravier concassé pour béton et fondations, livré par voyage complet de 8 m³ directement sur le chantier. Frais de livraison inclus selon la zone."
       },
@@ -295,7 +342,7 @@ async function seedBtp() {
         isRecommande: true,
         isNouveau: false,
         stock: 50,
-        categoryId: catMap["sable-gravier"]?.id,
+        categoryId: catMap["Sable & Gravier"]?.id,
         imageUrl: "https://images.unsplash.com/photo-1541888946425-d0fbb18615f3?auto=format&fit=crop&w=800&q=80",
         description: "Sable noir fin et propre pour mortiers de maçonnerie, crépissage et coulage de dalles. Livré par camion benne de 8 m³."
       },
@@ -309,7 +356,7 @@ async function seedBtp() {
         isRecommande: true,
         isNouveau: false,
         stock: 500,
-        categoryId: catMap["ciment-liants"]?.id,
+        categoryId: catMap["Ciment & Liants"]?.id,
         imageUrl: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=800&q=80",
         description: "Ciment haute résistance 42.5R pour béton armé, fondations, piliers et dalles. Prise rapide et grande résistance mécanique."
       },
@@ -323,7 +370,7 @@ async function seedBtp() {
         isRecommande: true,
         isNouveau: false,
         stock: 300,
-        categoryId: catMap["fer-a-beton-metallerie"]?.id,
+        categoryId: catMap["Fer à béton & Métallerie"]?.id,
         imageUrl: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80",
         description: "Barre de fer torsadé HA de 12 mm de diamètre, longueur 12 mètres standard pour ferraillage de poteaux, poutres et linteaux."
       },
@@ -337,7 +384,7 @@ async function seedBtp() {
         isRecommande: true,
         isNouveau: false,
         stock: 350,
-        categoryId: catMap["fer-a-beton-metallerie"]?.id,
+        categoryId: catMap["Fer à béton & Métallerie"]?.id,
         imageUrl: "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80",
         description: "Barre de fer torsadé HA de 10 mm pour chaînages et armatures légères. Longueur standard de 12 mètres."
       },
@@ -351,7 +398,7 @@ async function seedBtp() {
         isRecommande: true,
         isNouveau: true,
         stock: 120,
-        categoryId: catMap["bois-planches"]?.id,
+        categoryId: catMap["Bois & Planches"]?.id,
         imageUrl: "https://images.unsplash.com/photo-1520038410233-7141be7e6f97?auto=format&fit=crop&w=800&q=80",
         description: "Madrier en bois rouge traité contre les termites, idéal pour charpentes de toiture et étayage lourd de chantier."
       },
@@ -365,7 +412,7 @@ async function seedBtp() {
         isRecommande: false,
         isNouveau: true,
         stock: 80,
-        categoryId: catMap["contreplaque-panneaux"]?.id,
+        categoryId: catMap["Contreplaqué & Panneaux"]?.id,
         imageUrl: "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80",
         description: "Contreplaqué marine hydrofuge résistant à l'eau de mer et aux intempéries tropicales. Pour coffrages répétés et menuiseries."
       },
@@ -379,7 +426,7 @@ async function seedBtp() {
         isRecommande: true,
         isNouveau: true,
         stock: 60,
-        categoryId: catMap["peinture-finition"]?.id,
+        categoryId: catMap["Peinture & Finition"]?.id,
         imageUrl: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=800&q=80",
         description: "Peinture microporeuse anti-moisissures pour murs extérieurs. Protège durablement du soleil comorien et des pluies tropicales."
       }
@@ -411,3 +458,4 @@ async function seedBtp() {
 }
 
 seedBtp();
+
