@@ -13,7 +13,7 @@ export default function CreateBoutiqueModal({ form, setForm, existingAdmins = []
 
   const selectedCurrencies = Array.isArray(form.devisesDisponibles) && form.devisesDisponibles.length > 0
     ? form.devisesDisponibles
-    : ["KMF", "FCFA"];
+    : ["KMF"];
 
   function toggleCurrency(code) {
     const clean = String(code).trim().toUpperCase();

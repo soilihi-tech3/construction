@@ -83,24 +83,13 @@ function getLocalDateKey(d) {
 }
 
 function normalizeBoutiqueCurrencies(boutique) {
-  const slug = String(boutique?.slug || "").trim().toLowerCase();
   let list = boutique?.devisesDisponibles;
   if (typeof list === "string") {
     try { list = JSON.parse(list); } catch (e) { list = null; }
   }
-  if (slug === "soilihitech") {
-    if (Array.isArray(list) && list.length >= 2) {
-      return Array.from(new Set(list.map(c => {
-        const s = String(c || "").trim().toUpperCase();
-        return s === "XOF" ? "FCFA" : s;
-      }).filter(Boolean)));
-    }
-    return ["KMF", "FCFA"];
-  }
   if (!Array.isArray(list) || list.length === 0) {
-    // Par défaut pour les boutiques existantes (ex: Soilihitech Comores + Sénégal) : conserver les 2 devises KMF et FCFA
     const primary = boutique?.devise ? String(boutique.devise).trim().toUpperCase() : "KMF";
-    list = (primary === "KMF" || primary === "FCFA" || primary === "XOF") ? ["KMF", "FCFA"] : [primary];
+    list = [primary === "XOF" ? "FCFA" : primary];
   }
   return Array.from(new Set(list.map(c => {
     const s = String(c || "").trim().toUpperCase();

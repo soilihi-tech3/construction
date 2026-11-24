@@ -133,7 +133,7 @@ app.get("/api/boutique/current", (req, res) => {
     try { devisesDisponibles = JSON.parse(devisesDisponibles); } catch (e) { devisesDisponibles = null; }
   }
   if (!Array.isArray(devisesDisponibles) || devisesDisponibles.length === 0) {
-    devisesDisponibles = [b.devise || "KMF", "FCFA"];
+    devisesDisponibles = [b.devise ? String(b.devise).trim().toUpperCase() : "KMF"];
   }
   return res.json({
     id: b.id,

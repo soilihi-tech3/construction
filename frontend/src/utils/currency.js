@@ -103,8 +103,9 @@ export const getCurrencyMeta = (code) => {
 
 /**
  * Extrait la liste normalisée des codes de devises configurés pour une boutique.
- * - La boutique existante (Soilihitech) ou toute boutique sans restriction explicite conserve ["KMF", "FCFA"].
- * - Une nouvelle boutique configurée par le Super Admin avec 1, 2 ou N devises retourne exactement ses devises.
+ * Respecte fidèlement la configuration de la boutique :
+ * - Si le Super Admin a configuré 1 seule devise (ex: ["KMF"]), retourne exactement cette unique devise.
+ * - Si la boutique a plusieurs devises (ex: ["KMF", "EUR"]), retourne la liste.
  */
 export const getBoutiqueCurrencyCodes = (boutique = null) => {
   let target = boutique;
@@ -116,28 +117,7 @@ export const getBoutiqueCurrencyCodes = (boutique = null) => {
   }
 
   if (target) {
-    // La boutique historique Soilihitech conserve toujours ses 2 devises KMF et FCFA
-    const slug = String(target.slug || "").trim().toLowerCase();
-    if (slug === "soilihitech") {
-      let list = target.devisesDisponibles;
-      if (typeof list === "string") {
-        try { list = JSON.parse(list); } catch (e) { list = null; }
-      }
-      if (Array.isArray(list) && list.length >= 2) {
-        const cleaned = Array.from(
-          new Set(
-            list.map((c) => {
-              const s = String(c || "").trim().toUpperCase();
-              return s === "XOF" ? "FCFA" : s;
-            }).filter(Boolean)
-          )
-        );
-        if (cleaned.length >= 2) return cleaned;
-      }
-      return ["KMF", "FCFA"];
-    }
-
-    let list = target.devisesDisponibles;
+    let list = target.devisesDisponibles !== undefined ? target.devisesDisponibles : target.devises_disponibles;
     if (typeof list === "string") {
       try {
         list = JSON.parse(list);
@@ -162,14 +142,11 @@ export const getBoutiqueCurrencyCodes = (boutique = null) => {
     if (target.devise) {
       const primary = String(target.devise).trim().toUpperCase();
       const normPrimary = primary === "XOF" ? "FCFA" : primary;
-      if (normPrimary === "KMF" || normPrimary === "FCFA") {
-        return ["KMF", "FCFA"];
-      }
       return [normPrimary];
     }
   }
 
-  return ["KMF", "FCFA"];
+  return ["KMF"];
 };
 
 /**

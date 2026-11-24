@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ShoppingCart, Heart, AlertTriangle, Trash2 } from "lucide-react";
+import { ShoppingCart, Heart, AlertTriangle, Trash2, Check } from "lucide-react";
 import Stars from "./Stars.jsx";
 import { useCart } from "../context/CartContext.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 
-import { formatPrice as fcfa, getActiveCurrency, getProductPrice, formatDualPrice } from "../utils/currency.js";
+import { formatPrice as fcfa, getActiveCurrency, getProductPrice, formatDualPrice, getBoutiqueCurrencyCodes } from "../utils/currency.js";
 
 export default function ProductCard({ product, isFavorisPage }) {
   const navigate = useNavigate();
   const { cart, addToCart, showToast } = useCart();
-  const { user } = useAuth();
+  const { user, boutique } = useAuth();
+  const [justAdded, setJustAdded] = useState(false);
   
   const noteMoyenne = product.avis?.length
     ? product.avis.reduce((s, a) => s + a.note, 0) / product.avis.length
@@ -177,19 +178,7 @@ export default function ProductCard({ product, isFavorisPage }) {
       </div>
 
       <div className="bs-card-body" style={{ padding: "14px 16px 16px" }}>
-        {/* CATÉGORIE EN ORANGE */}
-        <div style={{
-          color: "#EA580C",
-          fontSize: 11,
-          fontWeight: 800,
-          textTransform: "uppercase",
-          letterSpacing: "0.6px",
-          marginBottom: 4
-        }}>
-          {product.Category?.nom || product.categorieNom || "MATÉRIAUX BTP"}
-        </div>
-
-        {/* TITRE DU PRODUIT */}
+        {/* TITRE DU PRODUIT (Catégorie masquée du visuel selon demande) */}
         <div className="nom" style={{ fontSize: 15, fontWeight: 800, color: "#0F172A", lineHeight: 1.35, minHeight: 38 }}>
           {product.nom}
         </div>
@@ -204,6 +193,9 @@ export default function ProductCard({ product, isFavorisPage }) {
         {/* AFFICHAGE DU PRIX : KMF EN HAUT / GRAND + PILL DISPONIBILITÉ À DROITE */}
         {(() => {
           const currentPrice = hasPromo && promoPrice ? promoPrice : regularPrice;
+          const boutiqueCurrencies = getBoutiqueCurrencyCodes(boutique);
+          const hasMultipleCurrencies = boutiqueCurrencies.length > 1;
+          const hasEur = boutiqueCurrencies.includes("EUR");
           const { kmfStr, eurStr } = formatDualPrice(currentPrice, product.prixParDevise?.EUR);
           const isSurCommande = product.disponibilite === "sur_commande";
 
@@ -244,59 +236,78 @@ export default function ProductCard({ product, isFavorisPage }) {
                 )}
               </div>
 
-              {/* Ligne secondaire : Prix en Euro + unité de vente */}
+              {/* Ligne secondaire : Prix en Euro (si multi-devises) + unité de vente */}
               <div style={{ fontSize: "12px", color: "#64748B", fontWeight: 600, marginTop: 2 }}>
-                {eurStr}{product.unite ? ` · par ${product.unite}` : ""}
+                {hasMultipleCurrencies && hasEur ? (
+                  <>{eurStr}{product.unite ? ` · par ${product.unite}` : ""}</>
+                ) : (
+                  product.unite ? `Par ${product.unite}` : ""
+                )}
               </div>
             </div>
           );
         })()}
 
-        {/* BOUTON AJOUTER MODERNE NOIR CONFORME AUX MAQUETTES */}
+        {/* BOUTON AJOUTER AVEC ANIMATION VISUELLE ET CONFIRMATION DYNAMIQUE */}
         <div style={{ marginTop: 12 }}>
           <button 
-            className="bs-add-btn" 
+            className={`bs-add-btn ${justAdded ? "bs-btn-just-added" : ""}`} 
             onClick={(e) => { 
               e.stopPropagation(); 
               if (isOutOfStock && product.disponibilite !== "sur_commande") {
                 showToast(`Désolé, le produit "${product.nom}" est actuellement en rupture de stock.`, "warning");
                 return;
               }
-              addToCart(product, 1); 
+              if (isMaxStockReached) return;
+              const res = addToCart(product, 1);
+              if (res !== false) {
+                setJustAdded(true);
+                setTimeout(() => setJustAdded(false), 1200);
+              }
             }}
             style={{
               width: "100%",
               marginTop: 0,
-              background: isOutOfStock && product.disponibilite !== "sur_commande" 
+              background: justAdded
+                ? "#16A34A"
+                : isOutOfStock && product.disponibilite !== "sur_commande" 
                 ? "var(--line)" 
                 : isMaxStockReached 
                 ? "#FEF3C7" 
                 : "#0F172A",
-              color: isOutOfStock && product.disponibilite !== "sur_commande" 
+              color: justAdded
+                ? "#ffffff"
+                : isOutOfStock && product.disponibilite !== "sur_commande" 
                 ? "var(--muted)" 
                 : isMaxStockReached 
                 ? "#B45309" 
                 : "#ffffff",
               borderRadius: 10,
               padding: "10px 14px",
-              fontWeight: 700,
+              fontWeight: 800,
               fontSize: "13.5px",
               border: isMaxStockReached ? "1px solid #F59E0B" : "none",
-              cursor: "pointer",
+              cursor: (isOutOfStock && product.disponibilite !== "sur_commande") || isMaxStockReached ? "not-allowed" : "pointer",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               gap: 6,
-              transition: "all 0.2s ease"
+              transform: justAdded ? "scale(1.02)" : "scale(1)",
+              transition: "all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
             }}
             onMouseEnter={(e) => {
-              if (!isOutOfStock && !isMaxStockReached) e.currentTarget.style.background = "#1E293B";
+              if (!justAdded && !isOutOfStock && !isMaxStockReached) e.currentTarget.style.background = "#1E293B";
             }}
             onMouseLeave={(e) => {
-              if (!isOutOfStock && !isMaxStockReached) e.currentTarget.style.background = "#0F172A";
+              if (!justAdded && !isOutOfStock && !isMaxStockReached) e.currentTarget.style.background = "#0F172A";
             }}
           >
-            {isOutOfStock && product.disponibilite !== "sur_commande" 
+            {justAdded ? (
+              <>
+                <Check size={16} strokeWidth={3} />
+                <span>Ajouté !</span>
+              </>
+            ) : isOutOfStock && product.disponibilite !== "sur_commande" 
               ? "Épuisé" 
               : isMaxStockReached 
               ? `Stock max (${qtyInCart}/${product.stock})` 

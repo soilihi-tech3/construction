@@ -15,6 +15,17 @@ export default function Header({ setCartOpen: setCartOpenProp }) {
   const { user, boutique: boutiqueContext, logout, theme, toggleTheme } = useAuth();
   const { count, showToast } = useCart();
   const [cartOpen, setCartOpen] = useState(false);
+  const [cartBumping, setCartBumping] = useState(false);
+  const prevCount = useRef(count);
+
+  useEffect(() => {
+    if (count > prevCount.current) {
+      setCartBumping(true);
+      const timer = setTimeout(() => setCartBumping(false), 450);
+      return () => clearTimeout(timer);
+    }
+    prevCount.current = count;
+  }, [count]);
   const [profileOpen, setProfileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [currentCurrency, setCurrentCurrency] = useState(() => getActiveCurrency());
@@ -630,44 +641,14 @@ export default function Header({ setCartOpen: setCartOpenProp }) {
               {theme === "dark" ? <Sun size={18} color="#F59E0B" /> : <Moon size={18} color="var(--forest-dark)" />}
             </button>
 
-            {/* BOUTON DIRECT WHATSAPP (Conforme à la maquette Ets Lihoma) */}
-            {(() => {
-              const phone = (boutique?.whatsappNumber || boutique?.telephone || "+269 333 00 00").replace(/[^0-9]/g, "");
-              const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent("Bonjour, je vous contacte depuis le site concernant des matériaux ou services BTP.")}`;
-              return (
-                <a
-                  href={waUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bs-desktop-whatsapp-pill"
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 8,
-                    background: "#22C55E",
-                    color: "#ffffff",
-                    padding: "9px 18px",
-                    borderRadius: 24,
-                    fontSize: 13.5,
-                    fontWeight: 800,
-                    textDecoration: "none",
-                    boxShadow: "0 2px 8px rgba(34, 197, 94, 0.28)",
-                    transition: "all 0.2s ease",
-                    flexShrink: 0
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = "#16A34A"}
-                  onMouseLeave={(e) => e.currentTarget.style.background = "#22C55E"}
-                >
-                  <MessageCircle size={18} />
-                  <span>WhatsApp</span>
-                </a>
-              );
-            })()}
-
-            <button className="bs-cart-btn" onClick={() => setCartOpen(true)} style={{
-              display: "flex", alignItems: "center", gap: 10, padding: "10px 22px", borderRadius: 28,
-              fontSize: 14.5, fontWeight: 800, flexShrink: 0
-            }}>
+            <button
+              className={`bs-cart-btn ${cartBumping ? "bs-cart-bump" : ""}`}
+              onClick={() => setCartOpen(true)}
+              style={{
+                display: "flex", alignItems: "center", gap: 10, padding: "10px 22px", borderRadius: 28,
+                fontSize: 14.5, fontWeight: 800, flexShrink: 0
+              }}
+            >
               <ShoppingCart size={18} />
               <span>Panier</span>
               {count > 0 && <span className="bs-badge">{count}</span>}

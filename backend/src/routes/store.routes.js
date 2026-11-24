@@ -94,7 +94,7 @@ router.get(["/:slug", "/:slug/boutique"], loadBoutique, cacheMiddleware(15), (re
   }
   if (!Array.isArray(devisesDisponibles) || devisesDisponibles.length === 0) {
     const primary = b.devise ? String(b.devise).trim().toUpperCase() : "KMF";
-    devisesDisponibles = primary === "KMF" ? ["KMF", "FCFA"] : [primary];
+    devisesDisponibles = [primary];
   }
   res.json({
     id: b.id, nom: b.nom, slug: b.slug, logoUrl: b.logoUrl,
