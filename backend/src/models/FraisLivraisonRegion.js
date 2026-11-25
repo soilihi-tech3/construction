@@ -20,3 +20,4 @@ const FraisLivraisonRegion = sequelize.define(
 );
 
 module.exports = FraisLivraisonRegion;
+

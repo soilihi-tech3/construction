@@ -119,7 +119,13 @@ router.get(["/:slug", "/:slug/boutique"], loadBoutique, cacheMiddleware(15), (re
     whatsappNumber: b.whatsappNumber || "",
     modulesActifs: b.modulesActifs || { vente: true, ventesHistorique: true, achats: true, fournisseurs: true, unites: true, homeBanners: true, sideBanners: true, commandes: true },
     modesPaiement: b.modesPaiement || { especes: true, mvola: true, holam: true, carte: false, wave: true, orange: true },
-    projetsRealises: b.projetsRealises || []
+    projetsRealises: (() => {
+      let p = b.projetsRealises;
+      if (typeof p === "string") {
+        try { p = JSON.parse(p); } catch (e) { p = []; }
+      }
+      return Array.isArray(p) ? p : [];
+    })()
   });
 });
 

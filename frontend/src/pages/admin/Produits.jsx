@@ -1609,7 +1609,8 @@ export default function AdminProduits() {
               )}
             </div>
 
-            {/* SÉLECTEUR DYNAMIQUE DE MODÈLES DE TÉLÉPHONES COMPATIBLES */}
+            {/* SÉLECTEUR DYNAMIQUE DE MODÈLES DE TÉLÉPHONES COMPATIBLES (Masqué pour le BTP) */}
+            {false && (
             <div style={{
               background: "var(--paper)",
               border: "1.5px solid var(--line)",
@@ -1796,6 +1797,7 @@ export default function AdminProduits() {
                 </div>
               )}
             </div>
+            )}
 
             <div className="bs-form-row-3">
               <div className="bs-input-group">

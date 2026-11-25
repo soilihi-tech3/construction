@@ -3547,7 +3547,11 @@ router.get("/projets", async (req, res, next) => {
   try {
     const boutique = await Boutique.findByPk(req.boutiqueId);
     if (!boutique) return res.status(404).json({ message: "Boutique introuvable." });
-    res.json(boutique.projetsRealises || []);
+    let p = boutique.projetsRealises;
+    if (typeof p === "string") {
+      try { p = JSON.parse(p); } catch (e) { p = []; }
+    }
+    res.json(Array.isArray(p) ? p : []);
   } catch (err) {
     next(err);
   }
