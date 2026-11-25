@@ -946,29 +946,8 @@ export default function ProductDetail() {
             )}
           </div>
 
-          {/* SPÉCIFICATIONS BTP (Volume, Livraison) - Conforme à la maquette Ets Lihoma */}
-          <div style={{
-            background: "var(--card, #fff)",
-            border: "1px solid var(--line, #e2e8f0)",
-            borderRadius: 14,
-            padding: "14px 18px",
-            marginBottom: 20
-          }}>
-            <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: 10, borderBottom: "1px solid var(--line, #e2e8f0)", fontSize: 14 }}>
-              <span style={{ color: "var(--muted, #64748b)" }}>Volume / Spécification</span>
-              <strong style={{ color: "var(--ink, #0f172a)" }}>{product.volume || (product.poids ? `${product.poids} kg` : (product.unite || "Standard BTP"))}</strong>
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 10, fontSize: 14 }}>
-              <span style={{ color: "var(--muted, #64748b)" }}>Livraison sur chantier</span>
-              <strong style={{ color: "#16A34A" }}>Incluse aux Comores</strong>
-            </div>
-          </div>
-
-          {/* PRIX DYNAMIQUE BTP : KMF EN HAUT, EURO (€) EN BAS SI MULTI-DEVISES */}
+          {/* PRIX DYNAMIQUE BTP : KMF EN HAUT, CONVERSION EXACTE EN EURO EN BAS */}
           {(() => {
-            const boutiqueCurrencies = getBoutiqueCurrencyCodes(boutique);
-            const hasMultipleCurrencies = boutiqueCurrencies.length > 1;
-            const hasEur = boutiqueCurrencies.includes("EUR");
             const { kmfStr, eurStr } = formatDualPrice(currentPrice, product.prixParDevise?.EUR);
             const totalKmf = currentPrice * quantity;
             const totalEur = Math.round((totalKmf / 491.96775) * 100) / 100;
@@ -990,21 +969,17 @@ export default function ProductDetail() {
                     </span>
                   )}
                 </div>
-                {hasMultipleCurrencies && hasEur && (
-                  <div style={{ fontSize: 16, color: "#475569", fontWeight: 700, marginTop: 4 }}>
-                    {eurStr}
-                  </div>
-                )}
+                <div style={{ fontSize: 15, color: "#64748B", fontWeight: 700, marginTop: 4 }}>
+                  soit <strong style={{ color: "#334155" }}>{eurStr}</strong>
+                </div>
                 <div style={{ marginTop: 12, paddingTop: 10, borderTop: "1px dashed var(--line)", fontSize: 14, fontWeight: 700, color: "var(--ink)" }}>
                   Total estimé ({quantity} {product.unite || "unité(s)"}) :{" "}
                   <span style={{ color: "#0F766E", fontSize: 16, fontWeight: 900 }}>
                     {totalKmf.toLocaleString("fr-FR")} KMF
                   </span>{" "}
-                  {hasMultipleCurrencies && hasEur && (
-                    <span style={{ color: "#64748B", fontSize: 14 }}>
-                      ({totalEur.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €)
-                    </span>
-                  )}
+                  <span style={{ color: "#64748B", fontSize: 14 }}>
+                    (soit {totalEur.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €)
+                  </span>
                 </div>
               </div>
             );

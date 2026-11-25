@@ -40,6 +40,11 @@ const Boutique = sequelize.define("Boutique", {
   whatsappNumber: { type: DataTypes.STRING(50), defaultValue: "" },
   bannerSlides: { type: DataTypes.JSON, defaultValue: [] },
   sideBanners: { type: DataTypes.JSON, defaultValue: [] },
+  projetsRealises: {
+    type: DataTypes.JSON,
+    defaultValue: [],
+    field: "projets_realises"
+  },
   modulesActifs: {
     type: DataTypes.JSON,
     defaultValue: {

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
-import { Plus, Trash2, Image, Layers, LayoutGrid, Store, Phone, MapPin, Mail, Info, Save, CreditCard, ToggleLeft, ToggleRight, Banknote, Smartphone, Globe, Key, CheckCircle2, HelpCircle, Database, AlertTriangle } from "lucide-react";
+import { Plus, Trash2, Image, Layers, LayoutGrid, Store, Phone, MapPin, Mail, Info, Save, CreditCard, ToggleLeft, ToggleRight, Banknote, Smartphone, Globe, Key, CheckCircle2, HelpCircle, Database, AlertTriangle, Building, Pencil, Eye, X } from "lucide-react";
 import api from "../../api";
 import ImageUploader from "../../components/ImageUploader.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
@@ -229,6 +229,19 @@ export default function AdminSettings({ defaultTab = "general" }) {
           }}
         >
           <CreditCard size={17} /> Modes de Paiement
+        </button>
+
+        <button
+          onClick={() => setActiveTab("projets")}
+          style={{
+            padding: "10px 18px", border: "none", background: "none", cursor: "pointer",
+            fontWeight: 700, fontSize: 13.5,
+            color: activeTab === "projets" ? "var(--forest)" : "var(--muted)",
+            borderBottom: activeTab === "projets" ? "3px solid var(--forest)" : "3px solid transparent",
+            marginBottom: -2, display: "flex", alignItems: "center", gap: 8
+          }}
+        >
+          <Building size={17} /> Réalisations BTP
         </button>
 
         <button
@@ -906,6 +919,11 @@ export default function AdminSettings({ defaultTab = "general" }) {
         <CleanupPanel />
       )}
 
+      {/* TAB 6: RÉALISATIONS BTP */}
+      {activeTab === "projets" && (
+        <ProjetsRealisesPanel />
+      )}
+
       <button className="bs-btn-primary" style={{ padding: "14px 28px", marginTop: 10 }} onClick={save}>
         Enregistrer toutes les modifications
       </button>
@@ -1023,6 +1041,302 @@ function CleanupPanel() {
           display: "flex",
           alignItems: "center",
           gap: 10
+        }}>
+          {notification.msg}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProjetsRealisesPanel() {
+  const [projets, setProjets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [notification, setNotification] = useState(null);
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [form, setForm] = useState({
+    nom: "",
+    region: "",
+    description: "",
+    photos: []
+  });
+  const [photoUrlInput, setPhotoUrlInput] = useState("");
+
+  const showNotification = (msg, type = "success") => {
+    setNotification({ msg, type });
+    setTimeout(() => setNotification(null), 3000);
+  };
+
+  useEffect(() => {
+    api.get("/admin/projets")
+      .then((res) => {
+        if (Array.isArray(res.data)) {
+          setProjets(res.data);
+        }
+      })
+      .catch((err) => console.error("Erreur chargement projets:", err))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleStartAdd = () => {
+    setEditingIndex(-1);
+    setForm({ nom: "", region: "", description: "", photos: [] });
+    setPhotoUrlInput("");
+  };
+
+  const handleStartEdit = (idx) => {
+    setEditingIndex(idx);
+    setForm({ ...projets[idx], photos: Array.isArray(projets[idx].photos) ? [...projets[idx].photos] : [] });
+    setPhotoUrlInput("");
+  };
+
+  const handleCancel = () => {
+    setEditingIndex(null);
+    setForm({ nom: "", region: "", description: "", photos: [] });
+    setPhotoUrlInput("");
+  };
+
+  const handleAddPhotoUrl = () => {
+    if (!photoUrlInput.trim()) return;
+    if (form.photos.length >= 4) {
+      showNotification("Maximum 4 photos par réalisation.", "error");
+      return;
+    }
+    setForm(f => ({ ...f, photos: [...f.photos, photoUrlInput.trim()] }));
+    setPhotoUrlInput("");
+  };
+
+  const handleRemovePhoto = (photoIdx) => {
+    setForm(f => ({ ...f, photos: f.photos.filter((_, i) => i !== photoIdx) }));
+  };
+
+  const handleSaveProject = () => {
+    if (!form.nom.trim()) {
+      showNotification("Veuillez indiquer le nom du projet ou de la maison.", "error");
+      return;
+    }
+    if (!form.region.trim()) {
+      showNotification("Veuillez indiquer la région ou ville.", "error");
+      return;
+    }
+    if (form.photos.length === 0) {
+      showNotification("Ajoutez au moins une photo pour cette réalisation.", "error");
+      return;
+    }
+
+    let updatedList = [...projets];
+    const projectData = {
+      id: form.id || Date.now(),
+      nom: form.nom.trim(),
+      region: form.region.trim(),
+      description: form.description.trim(),
+      photos: form.photos.slice(0, 4)
+    };
+
+    if (editingIndex === -1) {
+      updatedList.unshift(projectData);
+    } else {
+      updatedList[editingIndex] = projectData;
+    }
+
+    setProjets(updatedList);
+    setEditingIndex(null);
+    persistProjets(updatedList);
+  };
+
+  const handleDeleteProject = (idx) => {
+    if (!window.confirm("Êtes-vous sûr de vouloir supprimer cette réalisation ?")) return;
+    const updatedList = projets.filter((_, i) => i !== idx);
+    setProjets(updatedList);
+    persistProjets(updatedList);
+  };
+
+  const persistProjets = async (listToSave) => {
+    setSaving(true);
+    try {
+      await api.put("/admin/projets", { projets: listToSave });
+      showNotification("Réalisations BTP enregistrées avec succès !");
+    } catch (err) {
+      console.error(err);
+      showNotification("Erreur lors de l'enregistrement : " + (err.response?.data?.message || err.message), "error");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) return <div style={{ padding: 40, color: "var(--muted)" }}>Chargement des réalisations...</div>;
+
+  return (
+    <div className="bs-panel">
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
+        <div>
+          <h3 style={{ margin: "0 0 4px", fontSize: 19, color: "var(--forest-dark)", display: "flex", alignItems: "center", gap: 8 }}>
+            <Building size={20} color="var(--forest)" /> Projets & Réalisations BTP
+          </h3>
+          <p style={{ margin: 0, fontSize: 13.5, color: "var(--muted)" }}>
+            Présentez vos chantiers et maisons construites (nom, région, description et jusqu'à 4 photos défilantes par projet).
+          </p>
+        </div>
+        {editingIndex === null && (
+          <button className="bs-btn-primary" onClick={handleStartAdd} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Plus size={16} /> Ajouter une réalisation
+          </button>
+        )}
+      </div>
+
+      {editingIndex !== null && (
+        <div style={{ background: "var(--paper)", border: "2px solid var(--forest)", borderRadius: 16, padding: 20, marginBottom: 24 }}>
+          <h4 style={{ margin: "0 0 16px", color: "var(--forest-dark)", fontSize: 16 }}>
+            {editingIndex === -1 ? "Nouvelle Réalisation BTP" : "Modifier la Réalisation"}
+          </h4>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+            <div className="bs-field">
+              <label style={{ fontWeight: 700, fontSize: 13 }}>Nom de la maison / du projet *</label>
+              <input
+                className="bs-input"
+                placeholder="Ex: Villa R+1 Abdou, Résidence Itsandra..."
+                value={form.nom}
+                onChange={(e) => setForm({ ...form, nom: e.target.value })}
+              />
+            </div>
+            <div className="bs-field">
+              <label style={{ fontWeight: 700, fontSize: 13 }}>Région / Localisation (Ngazidja) *</label>
+              <input
+                className="bs-input"
+                placeholder="Ex: Itsandra Mdjini, Grande Comore"
+                value={form.region}
+                onChange={(e) => setForm({ ...form, region: e.target.value })}
+              />
+            </div>
+          </div>
+
+          <div className="bs-field" style={{ marginBottom: 16 }}>
+            <label style={{ fontWeight: 700, fontSize: 13 }}>Description des travaux réalisés</label>
+            <textarea
+              className="bs-input"
+              rows={3}
+              placeholder="Ex: Gros œuvre, fondation en béton armé, élévation briques 15cm, crépis, étanchéité terrasse..."
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+            />
+          </div>
+
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ display: "block", fontWeight: 700, fontSize: 13, marginBottom: 8, color: "var(--forest-dark)" }}>
+              Photos du projet (Jusqu'à 4 photos max) :
+            </label>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 12, marginBottom: 12 }}>
+              {form.photos.map((pUrl, pIdx) => (
+                <div key={pIdx} style={{ position: "relative", borderRadius: 10, overflow: "hidden", border: "2px solid var(--forest)", height: 110, background: "#000" }}>
+                  <img src={pUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <span style={{ position: "absolute", top: 4, left: 4, background: "rgba(0,0,0,0.6)", color: "#fff", padding: "1px 6px", borderRadius: 4, fontSize: 11, fontWeight: 700 }}>
+                    {pIdx + 1} / 4
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemovePhoto(pIdx)}
+                    style={{ position: "absolute", top: 4, right: 4, background: "#EF4444", color: "#fff", border: "none", borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {form.photos.length < 4 && (
+              <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", background: "#fff", padding: 12, borderRadius: 10, border: "1px dashed var(--line)" }}>
+                <input
+                  className="bs-input"
+                  style={{ flex: 1, minWidth: 220, fontSize: 13 }}
+                  placeholder="URL de la photo (https://...)"
+                  value={photoUrlInput}
+                  onChange={(e) => setPhotoUrlInput(e.target.value)}
+                />
+                <button type="button" className="bs-btn-secondary" onClick={handleAddPhotoUrl} style={{ fontSize: 13, padding: "8px 14px" }}>
+                  + Ajouter l'URL
+                </button>
+                <div style={{ flexShrink: 0 }}>
+                  <ImageUploader label="Ou téléverser" value="" onChange={(url) => {
+                    if (url) {
+                      if (form.photos.length >= 4) {
+                        showNotification("Maximum 4 photos par projet.", "error");
+                        return;
+                      }
+                      setForm(f => ({ ...f, photos: [...f.photos, url] }));
+                    }
+                  }} />
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+            <button className="bs-btn-secondary" onClick={handleCancel}>Annuler</button>
+            <button className="bs-btn-primary" onClick={handleSaveProject} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <Save size={16} /> Valider la réalisation
+            </button>
+          </div>
+        </div>
+      )}
+
+      {projets.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "40px 20px", color: "var(--muted)", background: "var(--paper)", borderRadius: 12 }}>
+          <Building size={40} style={{ opacity: 0.3, marginBottom: 8 }} />
+          <p style={{ margin: 0, fontWeight: 600 }}>Aucune réalisation BTP enregistrée.</p>
+          <p style={{ margin: "4px 0 0", fontSize: 13 }}>Cliquez sur "Ajouter une réalisation" pour présenter vos chantiers.</p>
+        </div>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
+          {projets.map((proj, idx) => {
+            const photosList = Array.isArray(proj.photos) ? proj.photos : [];
+            const coverPhoto = photosList[0] || "https://images.unsplash.com/photo-1541888946425-d0fbb1861564?auto=format&fit=crop&w=800&q=80";
+
+            return (
+              <div key={proj.id || idx} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+                <div style={{ position: "relative", height: 160, background: "#eee" }}>
+                  <img src={coverPhoto} alt={proj.nom} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <span style={{ position: "absolute", bottom: 8, right: 8, background: "rgba(0,0,0,0.7)", color: "#fff", padding: "2px 8px", borderRadius: 12, fontSize: 11, fontWeight: 700 }}>
+                    📷 {photosList.length} photo{photosList.length > 1 ? "s" : ""}
+                  </span>
+                  <span style={{ position: "absolute", top: 8, left: 8, background: "var(--forest)", color: "#fff", padding: "2px 8px", borderRadius: 6, fontSize: 11, fontWeight: 700 }}>
+                    {proj.region || "Comores"}
+                  </span>
+                </div>
+                <div style={{ padding: 14, flex: 1, display: "flex", flexDirection: "column" }}>
+                  <div style={{ fontWeight: 700, fontSize: 15, color: "var(--ink)", marginBottom: 4 }}>{proj.nom}</div>
+                  <div style={{ fontSize: 12.5, color: "var(--muted)", flex: 1, lineHeight: "1.4", marginBottom: 12 }}>
+                    {proj.description ? (proj.description.length > 90 ? proj.description.substring(0, 90) + "..." : proj.description) : "Aucune description"}
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 8, borderTop: "1px solid var(--line)" }}>
+                    <button
+                      onClick={() => handleStartEdit(idx)}
+                      style={{ background: "none", border: "none", color: "var(--forest)", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}
+                    >
+                      <Pencil size={14} /> Modifier
+                    </button>
+                    <button
+                      onClick={() => handleDeleteProject(idx)}
+                      style={{ background: "none", border: "none", color: "#EF4444", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", gap: 4 }}
+                    >
+                      <Trash2 size={14} /> Supprimer
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {notification && (
+        <div style={{
+          position: "fixed", bottom: 24, right: 24,
+          background: notification.type === "error" ? "#EF4444" : "#10B981",
+          color: "#fff", padding: "14px 24px", borderRadius: 12,
+          boxShadow: "0 8px 24px rgba(0,0,0,0.15)", fontWeight: 600, fontSize: 14,
+          zIndex: 9999, display: "flex", alignItems: "center", gap: 10
         }}>
           {notification.msg}
         </div>

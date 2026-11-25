@@ -178,29 +178,26 @@ export default function ProductCard({ product, isFavorisPage }) {
       </div>
 
       <div className="bs-card-body" style={{ padding: "14px 16px 16px" }}>
-        {/* TITRE DU PRODUIT (Catégorie masquée du visuel selon demande) */}
+        {/* TITRE DU PRODUIT */}
         <div className="nom" style={{ fontSize: 15, fontWeight: 800, color: "#0F172A", lineHeight: 1.35, minHeight: 38 }}>
           {product.nom}
         </div>
-        
-        {/* Détail Volume / Spécification BTP si renseigné */}
-        {product.volume && (
-          <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 2, marginBottom: 4 }}>
-            Volume : <strong style={{ color: "var(--ink)" }}>{product.volume}</strong>
-          </div>
-        )}
+
+        {/* ÉTOILES DE NOTATION DU PRODUIT */}
+        <div style={{ display: "flex", alignItems: "center", gap: 6, margin: "4px 0 6px" }}>
+          <Stars note={noteMoyenne} size={13} />
+          <span style={{ fontSize: 12, fontWeight: 700, color: "var(--ink)" }}>{noteMoyenne.toFixed(1)}</span>
+          <span style={{ fontSize: 11, color: "var(--muted)" }}>({product.avis?.length || 0})</span>
+        </div>
 
         {/* AFFICHAGE DU PRIX : KMF EN HAUT / GRAND + PILL DISPONIBILITÉ À DROITE */}
         {(() => {
           const currentPrice = hasPromo && promoPrice ? promoPrice : regularPrice;
-          const boutiqueCurrencies = getBoutiqueCurrencyCodes(boutique);
-          const hasMultipleCurrencies = boutiqueCurrencies.length > 1;
-          const hasEur = boutiqueCurrencies.includes("EUR");
           const { kmfStr, eurStr } = formatDualPrice(currentPrice, product.prixParDevise?.EUR);
           const isSurCommande = product.disponibilite === "sur_commande";
 
           return (
-            <div style={{ marginTop: 8 }}>
+            <div style={{ marginTop: 4 }}>
               {/* Ligne principale : Prix KMF + Badge Disponibilité */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
                 <span className="bs-price" style={{ fontSize: "17px", fontWeight: 900, color: hasPromo ? "#EA580C" : "#0F172A" }}>
@@ -236,13 +233,9 @@ export default function ProductCard({ product, isFavorisPage }) {
                 )}
               </div>
 
-              {/* Ligne secondaire : Prix en Euro (si multi-devises) + unité de vente */}
+              {/* Ligne secondaire : Valeur exacte en Euro + unité de vente */}
               <div style={{ fontSize: "12px", color: "#64748B", fontWeight: 600, marginTop: 2 }}>
-                {hasMultipleCurrencies && hasEur ? (
-                  <>{eurStr}{product.unite ? ` · par ${product.unite}` : ""}</>
-                ) : (
-                  product.unite ? `Par ${product.unite}` : ""
-                )}
+                soit <strong style={{ color: "#475569" }}>{eurStr}</strong>{product.unite ? ` · par ${product.unite}` : ""}
               </div>
             </div>
           );

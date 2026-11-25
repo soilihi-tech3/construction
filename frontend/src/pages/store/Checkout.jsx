@@ -32,8 +32,23 @@ export default function Checkout() {
   const [form, setForm] = useState({
     modeLivraison: "domicile",
     adresseLivraison: user?.adresse || "",
-    moyenPaiement: "cash"
+    moyenPaiement: "cash",
+    regionLivraison: "",
+    regionLivraisonId: null
   });
+
+  const [regionsLivraison, setRegionsLivraison] = useState([]);
+  const [selectedRegionId, setSelectedRegionId] = useState("");
+
+  useEffect(() => {
+    api.get(`/store/${SLUG}/livraisons`)
+      .then((res) => {
+        if (Array.isArray(res.data)) {
+          setRegionsLivraison(res.data);
+        }
+      })
+      .catch((err) => console.warn("Erreur chargement régions livraison:", err));
+  }, []);
 
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentModalData, setPaymentModalData] = useState(null);
@@ -167,7 +182,8 @@ export default function Checkout() {
     }
   }, [boutique]);
 
-  const tarifLivraisonConfig = boutique?.fraisLivraison || "0";
+  const selectedRegion = regionsLivraison.find(r => String(r.id) === String(selectedRegionId));
+  const tarifLivraisonConfig = selectedRegion ? Number(selectedRegion.prixKmf) : (boutique?.fraisLivraison || "0");
   const fraisLivraison = form.modeLivraison === "domicile" ? tarifLivraisonConfig : 0;
   const numericFrais = isNaN(Number(fraisLivraison)) ? 0 : Number(fraisLivraison);
 
@@ -192,11 +208,19 @@ export default function Checkout() {
 
   async function valider() {
     setErreur("");
-    if (form.modeLivraison === "domicile" && !form.adresseLivraison.trim()) {
-      const msg = "Veuillez indiquer votre adresse de livraison complète.";
-      setErreur(msg);
-      showToast(msg, "error", "Adresse manquante");
-      return;
+    if (form.modeLivraison === "domicile") {
+      if (regionsLivraison.length > 0 && !selectedRegionId) {
+        const msg = "Veuillez sélectionner votre région de livraison (Ngazidja).";
+        setErreur(msg);
+        showToast(msg, "error", "Région requise");
+        return;
+      }
+      if (!form.adresseLivraison.trim()) {
+        const msg = "Veuillez indiquer des précisions sur votre adresse de livraison.";
+        setErreur(msg);
+        showToast(msg, "error", "Adresse manquante");
+        return;
+      }
     }
 
     const chosenOption = PAYMENT_OPTIONS.find(p => p.id === form.moyenPaiement);
@@ -216,7 +240,12 @@ export default function Checkout() {
         subtotal,
         fraisLivraison,
         total,
-        form,
+        form: {
+          ...form,
+          fraisLivraison,
+          regionLivraison: selectedRegion?.region || "",
+          regionLivraisonId: selectedRegion?.id || null
+        },
         clearCart,
         showToast,
         navigate
@@ -235,7 +264,15 @@ export default function Checkout() {
         marqueTelephone: l.selectedBrand || null,
         imageUrl: l.selectedImageUrl || l.product?.imageUrl || null
       }));
-      const res = await api.post(`/store/${SLUG}/orders`, { items, devise: activeCurrency, fraisPaiement, ...form });
+      const res = await api.post(`/store/${SLUG}/orders`, { 
+        items, 
+        devise: activeCurrency, 
+        fraisPaiement,
+        fraisLivraison,
+        regionLivraison: selectedRegion?.region || null,
+        regionLivraisonId: selectedRegion?.id || null,
+        ...form 
+      });
       
       if (form.moyenPaiement === "wero" || form.moyenPaiement === "holam" || form.moyenPaiement === "mvola") {
         setPaymentModalData({
@@ -500,13 +537,80 @@ export default function Checkout() {
                   </div>
                 ))}
                 {form.modeLivraison === "domicile" && (
-                  <div style={{ position: "relative", marginTop: 4 }}>
-                    <MapPin size={16} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--sage)", pointerEvents: "none" }} />
-                    <input className="bs-input" style={{ paddingLeft: 42, borderRadius: 12, fontSize: 14 }}
-                      placeholder="Adresse complète (quartier, ville, rue...)"
-                      value={form.adresseLivraison}
-                      onChange={(e) => setForm(f => ({ ...f, adresseLivraison: e.target.value }))}
-                    />
+                  <div style={{ marginTop: 8, background: "var(--card)", border: "1.5px solid var(--line)", borderRadius: 14, padding: "16px 18px", boxShadow: "0 2px 8px rgba(0,0,0,0.03)" }}>
+                    <label style={{ display: "block", fontSize: 13.5, fontWeight: 700, color: "var(--forest-dark)", marginBottom: 8 }}>
+                      📍 Région / Zone de livraison (Île de Ngazidja) :
+                    </label>
+                    <select
+                      className="bs-input"
+                      style={{ 
+                        width: "100%", 
+                        fontSize: 14, 
+                        fontWeight: 600, 
+                        background: "#fff", 
+                        cursor: "pointer", 
+                        borderRadius: 12,
+                        padding: "10px 14px",
+                        borderColor: selectedRegion ? "var(--forest)" : "var(--line)",
+                        marginBottom: 10
+                      }}
+                      value={selectedRegionId}
+                      onChange={(e) => {
+                        const regId = e.target.value;
+                        setSelectedRegionId(regId);
+                        const reg = regionsLivraison.find(r => String(r.id) === String(regId));
+                        if (reg) {
+                          setForm(f => ({
+                            ...f,
+                            regionLivraison: reg.region,
+                            regionLivraisonId: reg.id
+                          }));
+                        } else {
+                          setForm(f => ({
+                            ...f,
+                            regionLivraison: "",
+                            regionLivraisonId: null
+                          }));
+                        }
+                      }}
+                    >
+                      <option value="">-- Sélectionnez votre région de livraison --</option>
+                      {regionsLivraison.map(r => {
+                        const eur = (Number(r.prixKmf) / 491.96775).toFixed(2);
+                        return (
+                          <option key={r.id} value={r.id}>
+                            {r.region} {r.sousRegions ? `(${r.sousRegions})` : ""} — +{Number(r.prixKmf).toLocaleString("fr-FR")} KMF (soit {eur} €)
+                          </option>
+                        );
+                      })}
+                    </select>
+
+                    {selectedRegion && (
+                      <div style={{ 
+                        background: "#F0FDF4", 
+                        border: "1px solid #BBF7D0", 
+                        borderRadius: 10, 
+                        padding: "10px 14px", 
+                        fontSize: 13, 
+                        color: "#166534", 
+                        display: "flex", 
+                        justifyContent: "space-between", 
+                        alignItems: "center",
+                        marginBottom: 12
+                      }}>
+                        <span>🚚 <strong>Délai estimé :</strong> {selectedRegion.delaiEstime || "1 à 2 jours"}</span>
+                        <span style={{ fontWeight: 800 }}>+{Number(selectedRegion.prixKmf).toLocaleString("fr-FR")} KMF (soit {(Number(selectedRegion.prixKmf) / 491.96775).toFixed(2)} €)</span>
+                      </div>
+                    )}
+
+                    <div style={{ position: "relative" }}>
+                      <MapPin size={16} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--sage)", pointerEvents: "none" }} />
+                      <input className="bs-input" style={{ paddingLeft: 42, borderRadius: 12, fontSize: 14 }}
+                        placeholder="Précisions d'adresse (Quartier, point de repère, nom du chantier...)"
+                        value={form.adresseLivraison}
+                        onChange={(e) => setForm(f => ({ ...f, adresseLivraison: e.target.value }))}
+                      />
+                    </div>
                   </div>
                 )}
                 {form.modeLivraison === "retrait" && (
@@ -684,11 +788,23 @@ export default function Checkout() {
               <span style={{ color: "var(--muted)" }}>Sous-total</span>
               <span style={{ fontWeight: 600 }}>{fcfa(subtotal, activeCurrency)}</span>
             </div>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20, fontSize: 14 }}>
-              <span style={{ color: "var(--muted)" }}>Livraison</span>
-              <span style={{ fontWeight: 600, color: (fraisLivraison === 0 || fraisLivraison === "0") ? "#2D8653" : "var(--ink)" }}>
-                {fraisLivraison === 0 || fraisLivraison === "0" ? "Gratuite" : (isNaN(Number(fraisLivraison)) ? fraisLivraison : fcfa(Number(fraisLivraison), activeCurrency))}
-              </span>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20, fontSize: 14 }}>
+              <div>
+                <span style={{ color: "var(--muted)", display: "block" }}>Livraison</span>
+                {selectedRegion && form.modeLivraison === "domicile" && (
+                  <span style={{ fontSize: 11.5, color: "var(--forest)", fontWeight: 600 }}>{selectedRegion.region}</span>
+                )}
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <span style={{ fontWeight: 600, color: (fraisLivraison === 0 || fraisLivraison === "0") ? "#2D8653" : "var(--ink)", display: "block" }}>
+                  {fraisLivraison === 0 || fraisLivraison === "0" ? "Gratuite" : (isNaN(Number(fraisLivraison)) ? fraisLivraison : fcfa(Number(fraisLivraison), activeCurrency))}
+                </span>
+                {Number(fraisLivraison) > 0 && !isNaN(Number(fraisLivraison)) && (
+                  <span style={{ fontSize: 11.5, color: "var(--forest)", fontWeight: 700 }}>
+                    soit {(Number(fraisLivraison) / 491.96775).toFixed(2)} €
+                  </span>
+                )}
+              </div>
             </div>
 
             {isOnlineMobile && fraisPaiement > 0 && (
@@ -705,7 +821,12 @@ export default function Checkout() {
 
             <div style={{ background: "var(--forest-dark)", borderRadius: 14, padding: "18px 20px", marginBottom: 24 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ color: "#DDE8DF", fontSize: 14, fontWeight: 600 }}>Total à payer</span>
+                <div>
+                  <span style={{ color: "#DDE8DF", fontSize: 14, fontWeight: 600, display: "block" }}>Total à payer</span>
+                  <span style={{ color: "#86EFAC", fontSize: 13, fontWeight: 700 }}>
+                    soit {(Math.round((total / 491.96775) * 100) / 100).toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €
+                  </span>
+                </div>
                 <span style={{ color: "#fff", fontSize: 24, fontWeight: 900 }}>{fcfa(total, activeCurrency)}</span>
               </div>
             </div>
@@ -727,11 +848,19 @@ export default function Checkout() {
                 type="button"
                 disabled={loading}
                 onClick={async () => {
-                  if (form.modeLivraison === "domicile" && !form.adresseLivraison.trim()) {
-                    const msg = "Veuillez indiquer votre adresse de livraison complète.";
-                    setErreur(msg);
-                    showToast(msg, "error", "Adresse manquante");
-                    return;
+                  if (form.modeLivraison === "domicile") {
+                    if (regionsLivraison.length > 0 && !selectedRegionId) {
+                      const msg = "Veuillez sélectionner votre région de livraison (Ngazidja).";
+                      setErreur(msg);
+                      showToast(msg, "error", "Région requise");
+                      return;
+                    }
+                    if (!form.adresseLivraison.trim()) {
+                      const msg = "Veuillez indiquer des précisions sur votre adresse de livraison.";
+                      setErreur(msg);
+                      showToast(msg, "error", "Adresse manquante");
+                      return;
+                    }
                   }
                   setLoading(true);
                   await processWhatsAppOrder({
@@ -741,7 +870,12 @@ export default function Checkout() {
                     subtotal,
                     fraisLivraison,
                     total,
-                    form,
+                    form: {
+                      ...form,
+                      fraisLivraison,
+                      regionLivraison: selectedRegion?.region || "",
+                      regionLivraisonId: selectedRegion?.id || null
+                    },
                     clearCart,
                     showToast,
                     navigate

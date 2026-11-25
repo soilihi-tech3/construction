@@ -215,8 +215,11 @@ export default function CartDrawer({ onClose }) {
                         )}
                       </div>
 
-                      <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2 }}>
-                        {fcfa(prix, activeCurrency)} {l.product?.unite ? `/ ${l.product.unite}` : ""}
+                      <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2, display: "flex", alignItems: "baseline", gap: 6, flexWrap: "wrap" }}>
+                        <span style={{ fontWeight: 700, color: "var(--ink)" }}>{fcfa(prix, activeCurrency)} {l.product?.unite ? `/ ${l.product.unite}` : ""}</span>
+                        <span style={{ fontSize: 11, color: "#64748B", fontWeight: 600 }}>
+                          (soit {(Math.round((prix / 491.96775) * 100) / 100).toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €)
+                        </span>
                       </div>
                       {hasPromo && (
                         <div style={{ fontSize: 11, color: "var(--accent)", fontWeight: 600, marginTop: 2 }}>
@@ -320,10 +323,15 @@ export default function CartDrawer({ onClose }) {
               <span style={{ fontSize: 13, fontWeight: 600, color: "var(--forest)" }}>Calculée à l'étape suivante</span>
             </div>
             <div style={{
-              display: "flex", justifyContent: "space-between", alignItems: "center",
+              display: "flex", justifyContent: "space-between", alignItems: "flex-end",
               paddingTop: 14, borderTop: "1.5px solid var(--line)", marginBottom: 18
             }}>
-              <span style={{ fontSize: 16, fontWeight: 700, color: "var(--ink)" }}>Total estimé</span>
+              <div>
+                <span style={{ fontSize: 16, fontWeight: 700, color: "var(--ink)", display: "block" }}>Total estimé</span>
+                <span style={{ fontSize: 12.5, color: "#64748B", fontWeight: 700 }}>
+                  soit {(Math.round((subtotal / 491.96775) * 100) / 100).toLocaleString("fr-FR", { minimumFractionDigits: 2 })} €
+                </span>
+              </div>
               <span style={{ fontSize: 20, fontWeight: 800, color: "var(--forest-dark)" }}>{fcfa(subtotal, activeCurrency)}</span>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>

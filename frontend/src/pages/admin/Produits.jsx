@@ -1860,7 +1860,7 @@ export default function AdminProduits() {
               </div>
             </div>
 
-            {/* SECTION SPÉCIFICATIONS BTP & CONDITIONNEMENT */}
+            {/* SECTION SPÉCIFICATIONS BTP & CONDITIONNEMENT (Mis en commentaire temporairement selon demande : le volume est inclus dans le nom de produit)
             <div style={{ background: "#F0FDF4", padding: 18, borderRadius: 14, border: "1.5px solid #86EFAC", display: "flex", flexDirection: "column", gap: 14 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, borderBottom: "1px solid #BBF7D0", paddingBottom: 8 }}>
                 <span style={{ fontSize: 16 }}>🏗️</span>
@@ -1931,6 +1931,7 @@ export default function AdminProduits() {
                 )}
               </div>
             </div>
+            */}
 
             {/* SECTION CLASSEMENT ACCUEIL (PLUS VENDU, RECOMMANDÉ, NOUVEAUTÉ) */}
             <div style={{ background: "var(--paper)", padding: 16, borderRadius: 12, border: "1px solid var(--line)", display: "flex", flexDirection: "column", gap: 14 }}>

@@ -1,6 +1,6 @@
 const express = require("express");
 const { Op } = require("sequelize");
-const { sequelize, Product, Category, Order, OrderItem, Review, User, Notification, Famille, RechargePlan, Marque, Testimonial, PhoneBrand, PhoneModel, Service } = require("../models");
+const { sequelize, Product, Category, Order, OrderItem, Review, User, Notification, Famille, RechargePlan, Marque, Testimonial, PhoneBrand, PhoneModel, Service, FraisLivraisonRegion } = require("../models");
 const { authenticate, optionalAuthenticate, requireRole, loadBoutique } = require("../middleware/auth");
 const { cacheMiddleware, clearCachePattern } = require("../config/cache");
 const { sendOrderConfirmationEmail, sendOrderStatusEmail } = require("../services/email.service");
@@ -118,8 +118,22 @@ router.get(["/:slug", "/:slug/boutique"], loadBoutique, cacheMiddleware(15), (re
     tiktokUrl: b.tiktokUrl || "",
     whatsappNumber: b.whatsappNumber || "",
     modulesActifs: b.modulesActifs || { vente: true, ventesHistorique: true, achats: true, fournisseurs: true, unites: true, homeBanners: true, sideBanners: true, commandes: true },
-    modesPaiement: b.modesPaiement || { especes: true, mvola: true, holam: true, carte: false, wave: true, orange: true }
+    modesPaiement: b.modesPaiement || { especes: true, mvola: true, holam: true, carte: false, wave: true, orange: true },
+    projetsRealises: b.projetsRealises || []
   });
+});
+
+// GET /api/store/:slug/livraisons (Frais de livraison par région de Ngazidja)
+router.get("/:slug/livraisons", loadBoutique, cacheMiddleware(60), async (req, res, next) => {
+  try {
+    const list = await FraisLivraisonRegion.findAll({
+      where: { boutiqueId: req.boutique.id, actif: true },
+      order: [["prixKmf", "ASC"]]
+    });
+    res.json(list);
+  } catch (err) {
+    next(err);
+  }
 });
 
 // GET /api/store/:slug/familles (cached 10 min)

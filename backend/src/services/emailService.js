@@ -65,7 +65,7 @@ async function sendEmailCore({ to, subject, html, type = "general" }) {
 
   const apiKey = (process.env.BREVO_API_KEY || process.env.SENDINBLUE_API_KEY || "").trim();
   const senderEmail = (process.env.BREVO_SENDER_EMAIL || "soilihiabdou99@gmail.com").trim();
-  const senderName = (process.env.BREVO_SENDER_NAME || "EasyMarket").trim();
+  const senderName = (process.env.BREVO_SENDER_NAME || "ANY Distribution BTP").trim();
 
   // Version texte brut pour maximiser la délivrabilité
   const textContent = html
@@ -162,13 +162,14 @@ async function sendEmailCore({ to, subject, html, type = "general" }) {
  */
 async function envoyerOTP(email, code, nomUtilisateur = "Client") {
   try {
+    const appName = process.env.BREVO_SENDER_NAME || "ANY Distribution BTP";
     const html = renderTemplate("otp.html", {
       nom: nomUtilisateur || "Client",
       code,
-      appName: process.env.BREVO_SENDER_NAME || "EasyMarket"
+      appName
     });
 
-    const subject = `${code} est votre code de vérification — EasyMarket`;
+    const subject = `${code} est votre code de vérification — ${appName}`;
     return await sendEmailCore({ to: email, subject, html, type: "otp" });
   } catch (err) {
     console.error("❌ [EMAIL OTP ERROR]:", err.message);
@@ -179,29 +180,38 @@ async function envoyerOTP(email, code, nomUtilisateur = "Client") {
 /**
  * 2. Envoie une confirmation de commande avec calcul exact du total et lien direct de suivi
  */
-async function envoyerConfirmationCommande(email, commande, boutiqueNom = "EasyMarket") {
+async function envoyerConfirmationCommande(email, commande, boutiqueNom = "ANY Distribution BTP") {
   try {
     const plainOrder = commande && typeof commande.get === "function" ? commande.get({ plain: true }) : (commande || {});
     const rawId = plainOrder.id || plainOrder.orderId || 0;
     const cmdId = "COM-B" + String(rawId).padStart(3, "0");
+    const currency = plainOrder.devise || "KMF";
 
     const itemsListHtml = (plainOrder.items || []).map(it => {
       const nomProd = it.product?.nom || it.nomProduit || 'Produit';
       const qty = Number(it.quantite || 1);
       const unitPrice = Number(it.prixUnitaire || it.prix || 0);
       const itemTotal = unitPrice * qty;
+      const eurVal = (itemTotal / 491.96775).toFixed(2);
+      const priceDisplay = currency === "KMF" 
+        ? `${itemTotal.toLocaleString('fr-FR')} KMF <br><span style="font-size:11px;color:#2D8653;font-weight:600;">(soit ${eurVal} €)</span>`
+        : `${itemTotal.toLocaleString('fr-FR')} ${currency}`;
+
       return `
         <tr>
           <td style="padding: 10px 0; border-bottom: 1px solid #EDF2F7; font-weight: 600;">${nomProd}</td>
           <td style="padding: 10px 0; border-bottom: 1px solid #EDF2F7; text-align: center;">x${qty}</td>
-          <td style="padding: 10px 0; border-bottom: 1px solid #EDF2F7; text-align: right; font-weight: 700;">${itemTotal.toLocaleString('fr-FR')} €</td>
+          <td style="padding: 10px 0; border-bottom: 1px solid #EDF2F7; text-align: right; font-weight: 700;">${priceDisplay}</td>
         </tr>
       `;
     }).join("");
 
     const clientNom = plainOrder.client?.nom || plainOrder.nomClient || "Cher Client";
     const totalValue = plainOrder.total !== undefined ? Number(plainOrder.total) : ((Number(plainOrder.sousTotal) || 0) + (Number(plainOrder.fraisLivraison) || 0));
-    const totalFormatted = totalValue.toLocaleString('fr-FR');
+    const eurTotal = (totalValue / 491.96775).toFixed(2);
+    const totalFormatted = currency === "KMF"
+      ? `${totalValue.toLocaleString('fr-FR')} KMF (soit ${eurTotal} €)`
+      : `${totalValue.toLocaleString('fr-FR')} ${currency}`;
     
     const baseUrl = process.env.FRONTEND_URL || "http://localhost:5173";
     const suiviUrl = rawId ? `${baseUrl}/mes-commandes?orderId=${rawId}` : `${baseUrl}/mes-commandes`;
@@ -269,14 +279,18 @@ async function envoyerConfirmationCommande(email, commande, boutiqueNom = "EasyM
 /**
  * Envoie un e-mail à l'administrateur lorsqu'une nouvelle commande est passée
  */
-async function envoyerNotificationAdminNouvelleCommande(adminEmail, commande, boutiqueNom = "EasyMarket", baseUrl = "") {
+async function envoyerNotificationAdminNouvelleCommande(adminEmail, commande, boutiqueNom = "ANY Distribution BTP", baseUrl = "") {
   try {
     const plainOrder = commande && typeof commande.get === "function" ? commande.get({ plain: true }) : (commande || {});
     const rawId = plainOrder.id || plainOrder.orderId || 0;
     const cmdId = "COM-B" + String(rawId).padStart(3, "0");
     const clientNom = plainOrder.client?.nom || plainOrder.nomClient || "Client";
+    const currency = plainOrder.devise || "KMF";
     const totalValue = plainOrder.total !== undefined ? Number(plainOrder.total) : ((Number(plainOrder.sousTotal) || 0) + (Number(plainOrder.fraisLivraison) || 0));
-    const totalFormatted = totalValue.toLocaleString('fr-FR');
+    const eurTotal = (totalValue / 491.96775).toFixed(2);
+    const totalFormatted = currency === "KMF"
+      ? `${totalValue.toLocaleString('fr-FR')} KMF (soit ${eurTotal} €)`
+      : `${totalValue.toLocaleString('fr-FR')} ${currency}`;
     
     const isPaid = plainOrder.statutPaiement === 'paye';
     const isCard = plainOrder.moyenPaiement === 'carte' || plainOrder.moyenPaiement === 'wero';

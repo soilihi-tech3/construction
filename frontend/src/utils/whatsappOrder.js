@@ -22,7 +22,10 @@ export function formatWhatsAppOrderMessage({ boutique, user, cart, subtotal, fra
     text += `- Retrait en boutique (Gratuit)\n`;
     text += `- Point de retrait : ${boutique?.adresseRetrait || boutique?.adresse || "Boutique"}\n\n`;
   } else {
-    text += `- Livraison à domicile\n`;
+    text += `- Livraison à domicile / sur chantier\n`;
+    if (form.regionLivraison) {
+      text += `- Région / Zone : ${form.regionLivraison}\n`;
+    }
     text += `- Adresse : ${form.adresseLivraison || user?.adresse || "Non précisée"}\n\n`;
   }
 
@@ -53,15 +56,19 @@ export function formatWhatsAppOrderMessage({ boutique, user, cart, subtotal, fra
   });
 
   const subtotalFormatted = formatPrice(subtotal, activeCurrency);
-  const totalFormatted = formatPrice(total || subtotal, activeCurrency);
+  const totalVal = Number(total || subtotal);
+  const totalFormatted = formatPrice(totalVal, activeCurrency);
+  const totalEur = (totalVal / 491.96775).toFixed(2);
+  const subtotalEur = (Number(subtotal) / 491.96775).toFixed(2);
 
   text += `\n*Résumé financier :*\n`;
-  text += `- Sous-total : ${subtotalFormatted}\n`;
+  text += `- Sous-total : ${subtotalFormatted} (soit ${subtotalEur} €)\n`;
   if (fraisLivraison !== undefined && fraisLivraison !== 0 && fraisLivraison !== "0") {
     const fraisFormatted = isNaN(Number(fraisLivraison)) ? fraisLivraison : formatPrice(fraisLivraison, activeCurrency);
-    text += `- Frais de livraison : ${fraisFormatted}\n`;
+    const fraisEur = !isNaN(Number(fraisLivraison)) ? ` (soit ${(Number(fraisLivraison) / 491.96775).toFixed(2)} €)` : "";
+    text += `- Frais de livraison : ${fraisFormatted}${fraisEur}\n`;
   }
-  text += `- *Total Général : ${totalFormatted}*\n\n`;
+  text += `- *Total Général : ${totalFormatted} (soit ${totalEur} €)*\n\n`;
 
   if (form.moyenPaiement === "wero" || form.moyenPaiement === "holam" || form.moyenPaiement === "mvola") {
     const methode = (form.moyenPaiement === "mvola") ? "MVola" : "Wero";

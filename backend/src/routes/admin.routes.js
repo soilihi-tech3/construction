@@ -1,7 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const { Op } = require("sequelize");
-const { sequelize, Product, Category, Order, OrderItem, User, Boutique, Notification, Review, Famille, Fournisseur, UniteVente, Achat, Marque, Testimonial, Expense, Saving, Service } = require("../models");
+const { sequelize, Product, Category, Order, OrderItem, User, Boutique, Notification, Review, Famille, Fournisseur, UniteVente, Achat, Marque, Testimonial, Expense, Saving, Service, FraisLivraisonRegion } = require("../models");
 const { authenticate, requireRole, requireOwnBoutique } = require("../middleware/auth");
 const { getCache, setCache, clearCachePattern } = require("../config/cache");
 const { broadcast } = require("../utils/broadcaster");
@@ -3464,6 +3464,109 @@ router.delete("/savings/:id", async (req, res, next) => {
     purgeCache();
     broadcast("saving_updated", { action: "delete", savingId: req.params.id, boutiqueId: req.boutiqueId });
     res.json({ success: true, message: "Opération d'épargne supprimée avec succès. Le solde d'épargne et votre bénéfice ont été réajustés." });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* ---------------------- FRAIS DE LIVRAISON PAR RÉGIONS (NGAZIDJA) ---------------------- */
+
+router.get("/livraisons", async (req, res, next) => {
+  try {
+    const list = await FraisLivraisonRegion.findAll({
+      where: { boutiqueId: req.boutiqueId },
+      order: [["prixKmf", "ASC"]]
+    });
+    res.json(list);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post("/livraisons", async (req, res, next) => {
+  try {
+    const { region, sousRegions, prixKmf, delaiEstime, actif } = req.body;
+    if (!region) return res.status(400).json({ message: "Le nom de la région est requis." });
+
+    const item = await FraisLivraisonRegion.create({
+      boutiqueId: req.boutiqueId,
+      region: region.trim(),
+      sousRegions: sousRegions ? sousRegions.trim() : null,
+      prixKmf: Number(prixKmf) || 0,
+      delaiEstime: delaiEstime ? delaiEstime.trim() : "24h à 48h",
+      actif: actif !== undefined ? Boolean(actif) : true
+    });
+
+    purgeCache();
+    res.status(201).json(item);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.put("/livraisons/:id", async (req, res, next) => {
+  try {
+    const item = await FraisLivraisonRegion.findOne({
+      where: { id: req.params.id, boutiqueId: req.boutiqueId }
+    });
+    if (!item) return res.status(404).json({ message: "Région de livraison introuvable." });
+
+    const { region, sousRegions, prixKmf, delaiEstime, actif } = req.body;
+    if (region !== undefined) item.region = region.trim();
+    if (sousRegions !== undefined) item.sousRegions = sousRegions ? sousRegions.trim() : null;
+    if (prixKmf !== undefined) item.prixKmf = Number(prixKmf) || 0;
+    if (delaiEstime !== undefined) item.delaiEstime = delaiEstime.trim();
+    if (actif !== undefined) item.actif = Boolean(actif);
+
+    await item.save();
+    purgeCache();
+    res.json(item);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.delete("/livraisons/:id", async (req, res, next) => {
+  try {
+    const item = await FraisLivraisonRegion.findOne({
+      where: { id: req.params.id, boutiqueId: req.boutiqueId }
+    });
+    if (!item) return res.status(404).json({ message: "Région de livraison introuvable." });
+
+    await item.destroy();
+    purgeCache();
+    res.json({ success: true, message: "Région de livraison supprimée avec succès." });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* ---------------------- PROJETS RÉALISÉS BTP ---------------------- */
+
+router.get("/projets", async (req, res, next) => {
+  try {
+    const boutique = await Boutique.findByPk(req.boutiqueId);
+    if (!boutique) return res.status(404).json({ message: "Boutique introuvable." });
+    res.json(boutique.projetsRealises || []);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.put("/projets", async (req, res, next) => {
+  try {
+    const boutique = await Boutique.findByPk(req.boutiqueId);
+    if (!boutique) return res.status(404).json({ message: "Boutique introuvable." });
+
+    const { projets } = req.body;
+    if (!Array.isArray(projets)) {
+      return res.status(400).json({ message: "Le champ projets doit être un tableau." });
+    }
+
+    boutique.projetsRealises = projets;
+    await boutique.save();
+    purgeCache();
+    res.json({ success: true, projets: boutique.projetsRealises });
   } catch (err) {
     next(err);
   }

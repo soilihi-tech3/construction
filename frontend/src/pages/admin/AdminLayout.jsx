@@ -3,7 +3,7 @@ import { NavLink, Link, Outlet, useLocation, useNavigate, Navigate } from "react
 import { 
   LayoutDashboard, Package, ShoppingCart, Users, Store, LogOut, Layers, 
   PanelLeftClose, PanelLeftOpen, User, Image, LayoutGrid, CreditCard, 
-  ShoppingBag, Truck, Scale, History, Menu, X, ExternalLink, ArrowLeft, Clock, Lock, UserCheck, Sun, Moon, PhoneCall, Award, MessageCircle, ClipboardList, Smartphone, Receipt, PiggyBank, HardHat
+  ShoppingBag, Truck, Scale, History, Menu, X, ExternalLink, ArrowLeft, Clock, Lock, UserCheck, Sun, Moon, PhoneCall, Award, MessageCircle, ClipboardList, Smartphone, Receipt, PiggyBank, HardHat, MapPin
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useCart } from "../../context/CartContext.jsx";
@@ -95,6 +95,7 @@ export default function AdminLayout() {
     { to: "/admin/telephones", label: "Modèles Téléphones", icon: Smartphone, permKey: ["voir_telephones", "gerer_telephones", "gerer_categories", "gerer_produits"], moduleKey: "telephones" },
     { to: "/admin/achats", label: "Achats & Stocks", icon: ShoppingBag, permKey: ["achats_stocks", "gerer_produits"], moduleKey: "achats" },
     { to: "/admin/fournisseurs", label: "Fournisseurs", icon: Truck, permKey: ["gerer_fournisseurs", "achats_stocks"], moduleKey: "fournisseurs" },
+    { to: "/admin/livraisons", label: "Frais de Livraison", icon: MapPin, permKey: ["gerer_parametres", "gerer_commandes"], moduleKey: "livraisons" },
     { to: "/admin/depenses", label: "Dépenses", icon: Receipt, permKey: ["voir_depenses", "creer_depense", "modifier_depense", "supprimer_depense"], moduleKey: "depenses" },
     { to: "/admin/epargne", label: "Épargne", icon: PiggyBank, adminOnly: true, moduleKey: "epargne" },
     { to: "/admin/unites", label: "Unités de vente", icon: Scale, permKey: ["gerer_unites", "gerer_categories", "gerer_produits"], moduleKey: "unites" },

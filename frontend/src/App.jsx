@@ -38,6 +38,7 @@ const AdminOrders = React.lazy(() => import("./pages/admin/Orders.jsx"));
 const AdminEmployees = React.lazy(() => import("./pages/admin/Employees.jsx"));
 const AdminClients = React.lazy(() => import("./pages/admin/Clients.jsx"));
 const AdminSettings = React.lazy(() => import("./pages/admin/Settings.jsx"));
+const AdminLivraisons = React.lazy(() => import("./pages/admin/Livraisons.jsx"));
 
 
 const VenteDirecte = React.lazy(() => import("./pages/admin/VenteDirecte.jsx"));
@@ -182,6 +183,7 @@ export default function App() {
           <Route path="commandes" element={<React.Suspense fallback={<div className="bs-admin-loading-spinner" />}><AdminOrders /></React.Suspense>} />
           <Route path="demandes" element={<ProtectedRoute roles={["admin", "employe", "super_admin"]}><React.Suspense fallback={<div className="bs-admin-loading-spinner" />}><DemandesSpeciales /></React.Suspense></ProtectedRoute>} />
           <Route path="clients" element={<ProtectedRoute roles={["admin", "employe", "super_admin"]}><React.Suspense fallback={<div className="bs-admin-loading-spinner" />}><AdminClients /></React.Suspense></ProtectedRoute>} />
+          <Route path="livraisons" element={<ProtectedRoute roles={["admin", "employe", "super_admin"]}><React.Suspense fallback={<div className="bs-admin-loading-spinner" />}><AdminLivraisons /></React.Suspense></ProtectedRoute>} />
           <Route path="employes" element={<ProtectedRoute roles={["admin", "super_admin"]}><React.Suspense fallback={<div className="bs-admin-loading-spinner" />}><AdminEmployees /></React.Suspense></ProtectedRoute>} />
           <Route path="utilisateurs" element={<ProtectedRoute roles={["admin", "super_admin"]}><React.Suspense fallback={<div className="bs-admin-loading-spinner" />}><AdminEmployees /></React.Suspense></ProtectedRoute>} />
           <Route path="parametres" element={<React.Suspense fallback={<div className="bs-admin-loading-spinner" />}><AdminSettings defaultTab="general" /></React.Suspense>} />
