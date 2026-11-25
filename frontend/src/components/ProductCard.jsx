@@ -178,8 +178,8 @@ export default function ProductCard({ product, isFavorisPage }) {
       </div>
 
       <div className="bs-card-body" style={{ padding: "14px 16px 16px" }}>
-        {/* TITRE DU PRODUIT */}
-        <div className="nom" style={{ fontSize: 15, fontWeight: 800, color: "#0F172A", lineHeight: 1.35, minHeight: 38 }}>
+        {/* TITRE DU PRODUIT (LÉGÈREMENT DESCENDU POUR DONNER PLUS DE HAUTEUR VISUELLE À LA PHOTO) */}
+        <div className="nom" style={{ fontSize: 15, fontWeight: 800, color: "#0F172A", lineHeight: 1.35, minHeight: 38, marginTop: 6, marginBottom: 4 }}>
           {product.nom}
         </div>
 
@@ -241,10 +241,10 @@ export default function ProductCard({ product, isFavorisPage }) {
           );
         })()}
 
-        {/* BOUTON AJOUTER AVEC ANIMATION VISUELLE ET CONFIRMATION DYNAMIQUE */}
+        {/* BOUTON AJOUTER AU PANIER : STYLE BLEU MODERNE AVEC CHANGEMENT DYNAMIQUE AU TOUCHER/SURVOL */}
         <div style={{ marginTop: 12 }}>
           <button 
-            className={`bs-add-btn ${justAdded ? "bs-btn-just-added" : ""}`} 
+            className={`bs-add-btn ${!isOutOfStock && !isMaxStockReached && !justAdded ? "bs-btn-cart-blue" : ""} ${justAdded ? "bs-btn-just-added" : ""}`} 
             onClick={(e) => { 
               e.stopPropagation(); 
               if (isOutOfStock && product.disponibilite !== "sur_commande") {
@@ -261,38 +261,32 @@ export default function ProductCard({ product, isFavorisPage }) {
             style={{
               width: "100%",
               marginTop: 0,
+              borderRadius: 12,
+              padding: "10px 14px",
+              fontWeight: 800,
+              fontSize: "13.5px",
+              cursor: (isOutOfStock && product.disponibilite !== "sur_commande") || isMaxStockReached ? "not-allowed" : "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 7,
               background: justAdded
                 ? "#16A34A"
                 : isOutOfStock && product.disponibilite !== "sur_commande" 
                 ? "var(--line)" 
                 : isMaxStockReached 
                 ? "#FEF3C7" 
-                : "#0F172A",
+                : undefined, // géré par .bs-btn-cart-blue
               color: justAdded
                 ? "#ffffff"
                 : isOutOfStock && product.disponibilite !== "sur_commande" 
                 ? "var(--muted)" 
                 : isMaxStockReached 
                 ? "#B45309" 
-                : "#ffffff",
-              borderRadius: 10,
-              padding: "10px 14px",
-              fontWeight: 800,
-              fontSize: "13.5px",
-              border: isMaxStockReached ? "1px solid #F59E0B" : "none",
-              cursor: (isOutOfStock && product.disponibilite !== "sur_commande") || isMaxStockReached ? "not-allowed" : "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 6,
+                : undefined, // géré par .bs-btn-cart-blue
+              border: isMaxStockReached ? "1px solid #F59E0B" : undefined,
               transform: justAdded ? "scale(1.02)" : "scale(1)",
-              transition: "all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
-            }}
-            onMouseEnter={(e) => {
-              if (!justAdded && !isOutOfStock && !isMaxStockReached) e.currentTarget.style.background = "#1E293B";
-            }}
-            onMouseLeave={(e) => {
-              if (!justAdded && !isOutOfStock && !isMaxStockReached) e.currentTarget.style.background = "#0F172A";
+              transition: "all 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
             }}
           >
             {justAdded ? (
@@ -300,11 +294,16 @@ export default function ProductCard({ product, isFavorisPage }) {
                 <Check size={16} strokeWidth={3} />
                 <span>Ajouté !</span>
               </>
-            ) : isOutOfStock && product.disponibilite !== "sur_commande" 
-              ? "Épuisé" 
-              : isMaxStockReached 
-              ? `Stock max (${qtyInCart}/${product.stock})` 
-              : "+ Ajouter"}
+            ) : isOutOfStock && product.disponibilite !== "sur_commande" ? (
+              "Épuisé"
+            ) : isMaxStockReached ? (
+              `Stock max (${qtyInCart}/${product.stock})`
+            ) : (
+              <>
+                <ShoppingCart size={15} strokeWidth={2.2} />
+                <span>Ajouter au panier</span>
+              </>
+            )}
           </button>
 
           {isFavorisPage && (

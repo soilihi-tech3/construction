@@ -565,7 +565,36 @@ export default function AdminProduits() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!form.nom || !form.categoryId) return;
+
+    // 1. VALIDATION ROBUSTE DES CHAMPS OBLIGATOIRES AVEC MESSAGES CLAIRS & GUIDAGE
+    if (!form.nom || !form.nom.trim()) {
+      toast.error("Le nom du matériau / produit est obligatoire. Veuillez renseigner ce champ.");
+      const el = document.getElementById("product-nom-input");
+      if (el) { el.focus(); el.scrollIntoView({ behavior: "smooth", block: "center" }); }
+      return;
+    }
+
+    if (!form.categoryId || form.categoryId === "") {
+      toast.error("Veuillez sélectionner une catégorie pour le produit.");
+      const el = document.getElementById("product-category-select");
+      if (el) { el.focus(); el.scrollIntoView({ behavior: "smooth", block: "center" }); }
+      return;
+    }
+
+    const currentPrix = form.prix !== undefined && form.prix !== "" ? Number(form.prix) : null;
+    if (currentPrix === null || isNaN(currentPrix) || currentPrix <= 0) {
+      toast.error("Le prix de vente est obligatoire et doit être un montant valide supérieur à 0 KMF.");
+      const el = document.getElementById("product-prix-input");
+      if (el) { el.focus(); el.scrollIntoView({ behavior: "smooth", block: "center" }); }
+      return;
+    }
+
+    if (!form.unite || !form.unite.trim()) {
+      toast.error("Veuillez renseigner ou sélectionner l'unité de vente (ex: sac, pièce, m³, camion...).");
+      const el = document.getElementById("product-unite-select");
+      if (el) { el.focus(); el.scrollIntoView({ behavior: "smooth", block: "center" }); }
+      return;
+    }
 
     const generalStock = form.stock !== "" ? Number(form.stock) : 0;
 
@@ -1549,11 +1578,12 @@ export default function AdminProduits() {
             )}
 
             <div className="bs-input-group">
-              <label>Nom du produit *</label>
+              <label htmlFor="product-nom-input">Nom du matériau / produit * (Obligatoire)</label>
               <input
+                id="product-nom-input"
                 className="bs-input"
                 required
-                placeholder="ex: Sérum Hydratant Acide Hyaluronique, Huile Capillaire Éixir, Broche Bijou Dorée..."
+                placeholder="ex: Ciment Portland 42.5R (Sac de 50 kg), Sable concassé (Camion 8 m³), Fer HA 12..."
                 value={form.nom}
                 onChange={(e) => set("nom", e.target.value)}
               />
@@ -1801,8 +1831,9 @@ export default function AdminProduits() {
 
             <div className="bs-form-row-3">
               <div className="bs-input-group">
-                <label>Catégorie *</label>
+                <label htmlFor="product-category-select">Catégorie * (Obligatoire)</label>
                 <select
+                  id="product-category-select"
                   className="bs-select"
                   required
                   value={form.categoryId}
@@ -1843,13 +1874,14 @@ export default function AdminProduits() {
               </div>
 
               <div className="bs-input-group">
-                <label>Unité de vente *</label>
+                <label htmlFor="product-unite-select">Unité de vente * (Obligatoire)</label>
                 <select
+                  id="product-unite-select"
                   className="bs-select"
                   value={form.unite}
                   onChange={(e) => set("unite", e.target.value)}
                 >
-                  <option value="">-- Sélectionner --</option>
+                  <option value="">-- Sélectionner l'unité --</option>
                   {unites.map((u) => (
                     <option key={u.id} value={u.abbreviation || u.nom}>
                       {u.nom} ({u.abbreviation || u.nom})
@@ -2118,8 +2150,9 @@ export default function AdminProduits() {
                     </div>
                     <div className="bs-form-row-3">
                       <div className="bs-input-group">
-                        <label>Prix Vente ({code}) {isFirst ? "*" : ""}</label>
+                        <label htmlFor={isFirst ? "product-prix-input" : undefined}>Prix Vente ({code}) {isFirst ? "* (Obligatoire)" : ""}</label>
                         <input
+                          id={isFirst ? "product-prix-input" : undefined}
                           className="bs-input"
                           type="number"
                           step="any"

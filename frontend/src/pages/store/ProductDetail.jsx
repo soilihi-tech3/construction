@@ -59,6 +59,7 @@ export default function ProductDetail() {
   const [selectedModele, setSelectedModele] = useState(null);
   const [selectedBrandFilter, setSelectedBrandFilter] = useState("all");
   const [missingSelectionAlert, setMissingSelectionAlert] = useState(false);
+  const [activeDetailTab, setActiveDetailTab] = useState("description");
 
   // Sync default color & senteur on product load
   useEffect(() => {
@@ -1156,9 +1157,96 @@ export default function ProductDetail() {
             </div>
           )}
 
-          <p style={{ color: "var(--muted)", fontSize: 15, maxWidth: 520, lineHeight: 1.6, marginBottom: 24 }}>
-            {product.description || (displayStock > 0 ? `Produit de qualité supérieure disponible en stock (${displayStock} ${product.unite}).` : "Rupture de stock temporaire.")}
-          </p>
+          {/* ONGLETS DESCRIPTION & CARACTÉRISTIQUES TECHNIQUES (SANS ONGLET LIVRAISON) */}
+          <div style={{ marginTop: 8, marginBottom: 24, maxWidth: 540 }}>
+            <div style={{ display: "flex", gap: 8, borderBottom: "2px solid #E2E8F0", marginBottom: 16 }}>
+              <button
+                type="button"
+                onClick={() => setActiveDetailTab("description")}
+                style={{
+                  padding: "10px 16px",
+                  fontWeight: 800,
+                  fontSize: 14.5,
+                  border: "none",
+                  background: "none",
+                  cursor: "pointer",
+                  color: activeDetailTab === "description" ? "#1D4ED8" : "#64748B",
+                  borderBottom: activeDetailTab === "description" ? "2.5px solid #1D4ED8" : "2.5px solid transparent",
+                  marginBottom: -2,
+                  transition: "all 0.2s ease"
+                }}
+              >
+                Description
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveDetailTab("caracteristiques")}
+                style={{
+                  padding: "10px 16px",
+                  fontWeight: 800,
+                  fontSize: 14.5,
+                  border: "none",
+                  background: "none",
+                  cursor: "pointer",
+                  color: activeDetailTab === "caracteristiques" ? "#1D4ED8" : "#64748B",
+                  borderBottom: activeDetailTab === "caracteristiques" ? "2.5px solid #1D4ED8" : "2.5px solid transparent",
+                  marginBottom: -2,
+                  transition: "all 0.2s ease"
+                }}
+              >
+                Caractéristiques
+              </button>
+            </div>
+
+            {activeDetailTab === "description" ? (
+              <p style={{ color: "var(--muted)", fontSize: 15, lineHeight: 1.65, margin: 0 }}>
+                {product.description || (displayStock > 0 ? `Matériau BTP de première qualité disponible en stock (${displayStock} ${product.unite || "unités"}).` : "Rupture de stock temporaire.")}
+              </p>
+            ) : (
+              <div style={{
+                borderRadius: 12,
+                overflow: "hidden",
+                border: "1px solid #E2E8F0",
+                background: "#ffffff",
+                boxShadow: "0 1px 4px rgba(0,0,0,0.03)"
+              }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13.5 }}>
+                  <tbody>
+                    {product.volume && (
+                      <tr style={{ borderBottom: "1px solid #F1F5F9", background: "#F8FAFC" }}>
+                        <td style={{ padding: "10px 14px", fontWeight: 700, color: "#475569", width: "42%" }}>Calibre / Spécification</td>
+                        <td style={{ padding: "10px 14px", color: "#0F172A", fontWeight: 600 }}>{product.volume}</td>
+                      </tr>
+                    )}
+                    <tr style={{ borderBottom: "1px solid #F1F5F9" }}>
+                      <td style={{ padding: "10px 14px", fontWeight: 700, color: "#475569" }}>Conditionnement</td>
+                      <td style={{ padding: "10px 14px", color: "#0F172A", fontWeight: 600 }}>
+                        {product.unite ? `Par ${product.unite}` : "Au détail / par unité"}
+                      </td>
+                    </tr>
+                    <tr style={{ borderBottom: "1px solid #F1F5F9", background: "#F8FAFC" }}>
+                      <td style={{ padding: "10px 14px", fontWeight: 700, color: "#475569" }}>Origine / Qualité</td>
+                      <td style={{ padding: "10px 14px", color: "#0F172A", fontWeight: 600 }}>
+                        {product.origine || "Carrière certifiée & Dépôt agréé Comores"}
+                      </td>
+                    </tr>
+                    <tr style={{ borderBottom: "1px solid #F1F5F9" }}>
+                      <td style={{ padding: "10px 14px", fontWeight: 700, color: "#475569" }}>Usage préconisé</td>
+                      <td style={{ padding: "10px 14px", color: "#0F172A", fontWeight: 600 }}>
+                        {product.usage || "Gros œuvre, dalles, fondations, maçonnerie et finitions"}
+                      </td>
+                    </tr>
+                    <tr style={{ background: "#F8FAFC" }}>
+                      <td style={{ padding: "10px 14px", fontWeight: 700, color: "#475569" }}>Référence article</td>
+                      <td style={{ padding: "10px 14px", color: "#0F172A", fontWeight: 700 }}>
+                        {product.reference || ("BTP-" + String(product.id || "").padStart(3, "0"))}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
 
           {/* ALERTE RUPTURE DE STOCK SUR VARIANTE SÉLECTIONNÉE */}
           {isAnySelectedVariantOutOfStock && (

@@ -1279,7 +1279,7 @@ html[data-theme="dark"] .bs-testimonial-card span[style*="color: var(--ink)"] {
 .bs-thumb-container {
   position: relative;
   width: 100%;
-  height: 230px;
+  height: 255px;
   background: #FFFFFF;
   display: flex;
   align-items: center;
@@ -3982,4 +3982,128 @@ html[data-theme="dark"] .bs-wa-label strong {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
+}
+
+/* ============ SECTION CATÉGORIES BENTO v2 ============ */
+.cats {
+  --c-bg: #f8fafc;
+  --c-text: #0f172a;
+  --c-muted: #64748b;
+  --c-border: #e2e8f0;
+  --c-card: #ffffff;
+  --c-primary: #1d4ed8;
+  --c-accent: #ea580c;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  padding: 36px 0;
+  color: var(--c-text);
+}
+.cats__inner { max-width: 1280px; margin: 0 auto; }
+
+.cats__head {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap; margin-bottom: 28px;
+}
+.cats__eyebrow {
+  display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--c-accent); margin-bottom: 6px;
+}
+.cats__title {
+  font-family: 'Playfair Display', Georgia, serif; font-size: clamp(26px, 3.2vw, 38px);
+  line-height: 1.15; margin: 0 0 6px; font-weight: 800; color: #0F172A;
+}
+.cats__sub { margin: 0; color: var(--c-muted); font-size: 15px; }
+.cats__all {
+  display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px;
+  color: var(--c-text); text-decoration: none; padding: 10px 20px;
+  border: 1.5px solid var(--c-border); border-radius: 999px; background: var(--c-card);
+  transition: all .2s ease; cursor: pointer;
+}
+.cats__all:hover { border-color: var(--c-accent); color: var(--c-accent); }
+
+/* ---------- Grille bento 6 cartes ---------- */
+.cats__grid {
+  display: grid; gap: 20px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: 290px;
+}
+.cat--wide { grid-column: span 2; }
+
+@media (max-width: 1100px) {
+  .cats__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 270px; }
+}
+@media (max-width: 640px) {
+  .cats__grid { grid-template-columns: 1fr; grid-auto-rows: 250px; }
+  .cat--wide { grid-column: span 1; }
+}
+
+/* ---------- Carte catégorie bento (image plein cadre) ---------- */
+.cat-bento-card {
+  position: relative; display: block; overflow: hidden; isolation: isolate;
+  border-radius: 24px; text-decoration: none; color: #fff; cursor: pointer;
+  background: linear-gradient(135deg, #1e3a8a, #0f172a);
+  box-shadow: 0 4px 12px rgba(15,23,42,.08), 0 12px 30px rgba(15,23,42,.12);
+  transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s;
+}
+.cat-bento-card:hover { transform: translateY(-6px); box-shadow: 0 18px 44px rgba(15,23,42,.28); }
+
+.cat-bento-card .cat__img {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2;
+  transition: transform .7s cubic-bezier(.2,.8,.2,1);
+}
+.cat-bento-card:hover .cat__img { transform: scale(1.08); }
+.cat-bento-card::before {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(to top, rgba(8,15,30,.92) 0%, rgba(8,15,30,.52) 42%, rgba(8,15,30,.12) 75%);
+  transition: opacity .3s;
+}
+
+.cat-bento-card .cat__top {
+  position: absolute; top: 18px; left: 18px; right: 18px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.cat-bento-card .cat__icon {
+  width: 44px; height: 44px; display: grid; place-items: center; border-radius: 14px;
+  background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.28);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); color: #fff;
+}
+.cat-bento-card .cat__count {
+  font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 999px;
+  background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.30);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); color: #fff;
+}
+
+.cat-bento-card .cat__content {
+  position: absolute; left: 22px; right: 76px; bottom: 22px; text-align: left;
+}
+.cat-bento-card .cat__title {
+  font-family: 'Playfair Display', Georgia, serif; font-weight: 800; margin: 0 0 6px;
+  font-size: 22px; line-height: 1.2; letter-spacing: -.01em; color: #fff;
+}
+.cat--wide .cat__title { font-size: 27px; }
+.cat-bento-card .cat__desc {
+  margin: 0; font-size: 13.5px; line-height: 1.5; color: rgba(255,255,255,.84);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+.cat-bento-card .cat__arrow {
+  position: absolute; right: 20px; bottom: 22px; width: 46px; height: 46px; border-radius: 50%;
+  display: grid; place-items: center; background: #fff; color: #0f172a;
+  transition: background .25s, color .25s, transform .25s, box-shadow .25s;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+.cat-bento-card:hover .cat__arrow { background: #ea580c; color: #fff; transform: rotate(-45deg); box-shadow: 0 6px 16px rgba(234,88,12,0.4); }
+
+/* Bouton bleu ajouter au panier */
+.bs-btn-cart-blue {
+  background: #EFF6FF !important;
+  color: #1D4ED8 !important;
+  border: 1.5px solid #BFDBFE !important;
+  transition: all 0.25s ease !important;
+}
+.bs-btn-cart-blue:hover, .bs-btn-cart-blue:active, .bs-btn-cart-blue:focus {
+  background: #1D4ED8 !important;
+  color: #ffffff !important;
+  border-color: #1D4ED8 !important;
+  box-shadow: 0 6px 18px rgba(29, 78, 216, 0.35) !important;
+  transform: translateY(-1px) !important;
 }

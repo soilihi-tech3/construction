@@ -637,7 +637,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 2. CATÉGORIES EN HAUT : STRICTEMENT 8 GRANDES CARTES IMMERSIVES PLEINE IMAGE (COMPLÈTEMENT DISTINCTES DES PRODUITS) */}
+      {/* 2. CATÉGORIES EN HAUT : BENTO GRID v2 STRICTEMENT 6 CARTES IMMERSIVES PLEINE IMAGE */}
       {(() => {
         const btpCats = safeCategories.filter(c => {
           const n = (c.nom || "").toLowerCase();
@@ -645,160 +645,96 @@ export default function Home() {
                  !n.includes("écouteur") && !n.includes("câble") && !n.includes("powerbank") && 
                  !n.includes("support");
         });
-        const displayCategories = (btpCats.length >= 4 ? btpCats : DEFAULT_BTP_CATEGORIES).slice(0, 8);
+        const baseList = btpCats.length >= 6 
+          ? btpCats 
+          : [...btpCats, ...DEFAULT_BTP_CATEGORIES.filter(d => !btpCats.some(b => b.nom.toLowerCase().includes(d.nom.toLowerCase().slice(0, 5))))];
+        const displayCategories = baseList.slice(0, 6);
+
+        // Compter les produits par catégorie
+        const catCounts = {};
+        if (products && Array.isArray(products)) {
+          products.forEach(p => {
+            const cid = p.categoryId || (p.categorie && p.categorie.id);
+            if (cid) catCounts[cid] = (catCounts[cid] || 0) + 1;
+          });
+        }
+        const fallbackCounts = [24, 32, 8, 18, 14, 56];
 
         return (
-          <div style={{ marginTop: 44, marginBottom: 44 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 12, marginBottom: 22 }}>
-              <div>
-                <h2 style={{ fontSize: "clamp(22px, 3.5vw, 28px)", fontWeight: 800, color: "var(--ink, #0F172A)", margin: 0 }}>
-                  Nos catégories de produits
-                </h2>
-                <p style={{ margin: "6px 0 0", color: "var(--muted, #64748B)", fontSize: 14.5 }}>
-                  Tout le nécessaire pour vos chantiers, du gros œuvre à la finition.
-                </p>
-              </div>
-              <button 
-                onClick={() => navigate("/catalogue")}
-                style={{
-                  background: "none", border: "none", color: "#EA580C",
-                  fontSize: 15, fontWeight: 700, cursor: "pointer",
-                  display: "inline-flex", alignItems: "center", gap: 6,
-                  padding: "4px 0"
-                }}
-              >
-                Voir tout →
-              </button>
-            </div>
+          <section className="cats" id="categories" style={{ marginTop: 20, marginBottom: 44, padding: "24px 0" }}>
+            <div className="cats__inner">
+              <header className="cats__head">
+                <div>
+                  <span className="cats__eyebrow">Catalogue</span>
+                  <h2 className="cats__title">Nos catégories de produits</h2>
+                  <p className="cats__sub">Tout le nécessaire pour vos chantiers, du gros œuvre à la finition.</p>
+                </div>
+                <button 
+                  onClick={() => navigate("/catalogue")}
+                  className="cats__all"
+                  aria-label="Voir tout le catalogue"
+                >
+                  <span>Voir tout le catalogue</span>
+                  <ArrowRight size={16} />
+                </button>
+              </header>
 
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-              gap: 20
-            }}>
-              {displayCategories.map((c, idx) => {
-                const IconComp = getCategoryIconComponent(c.nom, c.iconType);
-                const categoryImg = getCategoryImageUrl(c.nom, c.imageUrl);
+              <div className="cats__grid">
+                {displayCategories.map((c, idx) => {
+                  const IconComp = getCategoryIconComponent(c.nom, c.iconType);
+                  const categoryImg = getCategoryImageUrl(c.nom, c.imageUrl);
+                  const isWide = idx === 0 || idx === 5;
+                  const count = catCounts[c.id] || fallbackCounts[idx] || 12;
 
-                return (
-                  <div
-                    key={c.id || idx}
-                    onClick={() => navigate(`/catalogue?categoryId=${c.id}`)}
-                    style={{
-                      position: "relative",
-                      height: 205,
-                      borderRadius: 16,
-                      overflow: "hidden",
-                      cursor: "pointer",
-                      boxShadow: "0 4px 14px rgba(0,0,0,0.06)",
-                      transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)"
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = "translateY(-4px)";
-                      e.currentTarget.style.boxShadow = "0 14px 28px rgba(0,0,0,0.18)";
-                      const img = e.currentTarget.querySelector(".cat-bg-img");
-                      if (img) img.style.transform = "scale(1.06)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = "translateY(0)";
-                      e.currentTarget.style.boxShadow = "0 4px 14px rgba(0,0,0,0.06)";
-                      const img = e.currentTarget.querySelector(".cat-bg-img");
-                      if (img) img.style.transform = "scale(1)";
-                    }}
-                  >
-                    {/* PHOTO EN FOND PLEIN ÉCRAN */}
-                    <img 
-                      src={categoryImg}
-                      alt={c.nom}
-                      className="cat-bg-img"
-                      loading="lazy"
-                      decoding="async"
-                      onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src = "https://images.unsplash.com/photo-1541888946425-d0fbb180c5f7?auto=format&fit=crop&w=800&q=80";
-                      }}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        transition: "transform 0.4s ease"
-                      }}
-                    />
+                  return (
+                    <div
+                      key={c.id || idx}
+                      onClick={() => navigate(`/catalogue?categoryId=${c.id}`)}
+                      className={`cat-bento-card ${isWide ? "cat--wide" : ""}`}
+                    >
+                      {/* Image plein cadre */}
+                      <img 
+                        src={categoryImg}
+                        alt={c.nom}
+                        className="cat__img"
+                        loading="lazy"
+                        decoding="async"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = "https://images.unsplash.com/photo-1541888946425-d0fbb180c5f7?auto=format&fit=crop&w=800&q=80";
+                        }}
+                      />
 
-                    {/* OVERLAY SOMBRE ÉLÉGANT & TEXTE CENTRÉ */}
-                    <div style={{
-                      position: "absolute",
-                      inset: 0,
-                      background: "linear-gradient(to top, rgba(15,23,42,0.88) 0%, rgba(15,23,42,0.45) 50%, rgba(15,23,42,0.3) 100%)",
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      padding: "20px",
-                      textAlign: "center"
-                    }}>
-                      <div style={{
-                        width: 38,
-                        height: 38,
-                        borderRadius: 12,
-                        background: "rgba(255, 255, 255, 0.2)",
-                        backdropFilter: "blur(6px)",
-                        WebkitBackdropFilter: "blur(6px)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        color: "#FDBA74",
-                        marginBottom: 10
-                      }}>
-                        <IconComp size={20} />
+                      {/* Top bar avec icône verre et pill de count */}
+                      <div className="cat__top">
+                        <div className="cat__icon">
+                          <IconComp size={22} strokeWidth={2} />
+                        </div>
+                        <span className="cat__count">
+                          {count} produit{count > 1 ? "s" : ""}
+                        </span>
                       </div>
 
-                      <h3 style={{
-                        color: "#ffffff",
-                        fontSize: "clamp(18px, 2.2vw, 21px)",
-                        fontWeight: 800,
-                        margin: "0 0 6px",
-                        letterSpacing: "-0.3px",
-                        textShadow: "0 2px 8px rgba(0,0,0,0.7)"
-                      }}>
-                        {c.nom}
-                      </h3>
-
-                      <div style={{
-                        color: "rgba(255,255,255,0.88)",
-                        fontSize: 12.5,
-                        lineHeight: 1.4,
-                        maxWidth: "92%",
-                        display: "-webkit-box",
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: "vertical",
-                        overflow: "hidden",
-                        textShadow: "0 1px 4px rgba(0,0,0,0.5)"
-                      }}>
-                        {getCategoryDesc(c.nom, c.description)}
+                      {/* Contenu titre et description */}
+                      <div className="cat__content">
+                        <h3 className="cat__title">
+                          {c.nom}
+                        </h3>
+                        <p className="cat__desc">
+                          {getCategoryDesc(c.nom, c.description)}
+                        </p>
                       </div>
 
-                      <div style={{
-                        marginTop: 10,
-                        color: "#FDBA74",
-                        fontSize: 12,
-                        fontWeight: 700,
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 5,
-                        background: "rgba(0,0,0,0.3)",
-                        padding: "4px 12px",
-                        borderRadius: 20
-                      }}>
-                        <span>Explorer</span>
-                        <ArrowRight size={13} />
+                      {/* Flèche ronde interactive */}
+                      <div className="cat__arrow" title={`Voir ${c.nom}`}>
+                        <ArrowRight size={20} strokeWidth={2.5} />
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          </section>
         );
       })()}
 
